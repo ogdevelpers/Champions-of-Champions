@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import { createServiceClient } from "@/lib/supabase/server";
 import { SESSION_COOKIE, sessionCookieOptions } from "@/lib/auth";
 
+export const runtime = "edge";
+
 export async function POST(request: NextRequest) {
   try {
     const { employeeId } = await request.json();

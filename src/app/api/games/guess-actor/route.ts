@@ -3,6 +3,8 @@ import { getSession } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase/server";
 import { ACTOR_QUESTIONS, calculateScore } from "@/lib/game-data/actors";
 
+export const runtime = "edge";
+
 export async function POST(request: NextRequest) {
   const session = await getSession();
   if (!session) {

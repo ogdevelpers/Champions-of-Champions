@@ -19,13 +19,15 @@ export function GuessActorGame() {
   const [score, setScore] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const submittedRef = useRef(submitted);
+  submittedRef.current = submitted;
 
-  const handleSubmit = useCallback(async () => {
-    if (submitted) return;
+  const handleSubmit = useCallback(async (elapsedOverride?: number) => {
+    if (submittedRef.current) return;
     setSubmitted(true);
     if (timerRef.current) clearInterval(timerRef.current);
 
-    const timeTaken = GUESS_TIME_SECONDS - timeLeft;
+    const timeTaken = elapsedOverride ?? GUESS_TIME_SECONDS - timeLeft;
     const finalScore = calculateScore(answers);
     setScore(finalScore);
     setSubmitting(true);
@@ -39,7 +41,10 @@ export function GuessActorGame() {
     } finally {
       setSubmitting(false);
     }
-  }, [answers, submitted, timeLeft]);
+  }, [answers, timeLeft]);
+
+  const handleSubmitRef = useRef(handleSubmit);
+  handleSubmitRef.current = handleSubmit;
 
   useEffect(() => {
     if (!started || submitted) return;
@@ -47,7 +52,7 @@ export function GuessActorGame() {
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          handleSubmit();
+          handleSubmitRef.current(GUESS_TIME_SECONDS);
           return 0;
         }
         return prev - 1;
@@ -57,7 +62,7 @@ export function GuessActorGame() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [started, submitted, handleSubmit]);
+  }, [started, submitted]);
 
   if (!started) {
     return (
@@ -146,7 +151,7 @@ export function GuessActorGame() {
 
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gold/20 bg-maroon-dark/95 px-4 py-4 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl justify-center">
-          <Button onClick={handleSubmit} variant="primary" size="sm" className="w-full max-w-md shadow-xl shadow-gold/20">
+          <Button onClick={() => handleSubmit()} variant="primary" size="sm" className="w-full max-w-md shadow-xl shadow-gold/20">
             Submit Answers ✓
           </Button>
         </div>

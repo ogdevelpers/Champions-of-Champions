@@ -4,7 +4,7 @@ import { SESSION_COOKIE } from "@/lib/auth";
 
 const protectedPaths = ["/dashboard", "/games"];
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const session = request.cookies.get(SESSION_COOKIE);
 

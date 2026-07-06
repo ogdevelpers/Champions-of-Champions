@@ -1,5 +1,7 @@
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
+
+export const runtime = "edge";
 import { GameHeader } from "@/components/GameHeader";
 import { GameGrid } from "@/components/GameGrid";
 import { PageShell } from "@/components/PageShell";
