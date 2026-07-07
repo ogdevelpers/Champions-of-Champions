@@ -6,12 +6,16 @@ CREATE TABLE IF NOT EXISTS employee_ids (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   employee_id TEXT UNIQUE NOT NULL,
   name TEXT,
+  email TEXT,
   is_active BOOLEAN DEFAULT true,
+  can_play_games BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- If your table was created without is_active, run:
+-- If your table was created without newer columns, run:
+-- ALTER TABLE employee_ids ADD COLUMN IF NOT EXISTS email TEXT;
 -- ALTER TABLE employee_ids ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+-- ALTER TABLE employee_ids ADD COLUMN IF NOT EXISTS can_play_games BOOLEAN DEFAULT false;
 
 -- Retro Poster submissions
 CREATE TABLE IF NOT EXISTS retro_poster_submissions (
@@ -53,15 +57,28 @@ CREATE TABLE IF NOT EXISTS dubsmash_submissions (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Live stream interaction tracking
+CREATE TABLE IF NOT EXISTS live_stream_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  employee_id TEXT NOT NULL,
+  stream_event_id TEXT NOT NULL,
+  action TEXT NOT NULL,
+  stream_url TEXT,
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Indexes for leaderboard queries
 CREATE INDEX IF NOT EXISTS idx_guess_actor_score ON guess_actor_submissions (score DESC, time_taken_seconds ASC);
 CREATE INDEX IF NOT EXISTS idx_memory_game ON memory_game_results (actions ASC, time_taken_seconds ASC);
+CREATE INDEX IF NOT EXISTS idx_live_stream_events_employee ON live_stream_events (employee_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_live_stream_events_action ON live_stream_events (action, created_at DESC);
 
 -- Sample employee IDs (replace with your actual IDs)
-INSERT INTO employee_ids (employee_id, name) VALUES
-  ('EMP001', 'Demo User 1'),
-  ('EMP002', 'Demo User 2'),
-  ('EMP003', 'Demo User 3')
+INSERT INTO employee_ids (employee_id, name, can_play_games) VALUES
+  ('EMP001', 'Demo User 1', true),
+  ('EMP002', 'Demo User 2', true),
+  ('EMP003', 'Demo User 3', true)
 ON CONFLICT (employee_id) DO NOTHING;
 
 -- Storage buckets (create via Supabase Dashboard or run in SQL):

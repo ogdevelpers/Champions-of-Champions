@@ -27,6 +27,18 @@ body {
   min-height: 100vh;
 }
 
+button:not(:disabled),
+a[href],
+label[for],
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 .font-display {
   font-family: var(--font-display);
 }
@@ -150,10 +162,22 @@ body {
 
 /* ── Component utilities ── */
 .glass-panel {
-  background: rgba(122, 21, 48, 0.65);
+  background: rgba(61, 6, 18, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  border: 1px solid rgba(212, 175, 55, 0.28);
+}
+
+.text-body {
+  color: rgba(250, 243, 232, 0.92);
+}
+
+.text-muted {
+  color: rgba(250, 243, 232, 0.78);
+}
+
+.text-label {
+  color: rgba(240, 208, 96, 0.95);
 }
 
 .gold-gradient-text {

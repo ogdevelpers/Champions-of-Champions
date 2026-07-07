@@ -26,23 +26,23 @@ export function GameHeader({ title, subtitle, backHref = "/dashboard", showBack 
           {showBack && (
             <Link
               href={backHref}
-              className="group flex h-10 w-10 items-center justify-center rounded-full border border-gold/30 text-gold transition-all duration-300 hover:scale-105 hover:border-gold hover:bg-gold/10 hover:shadow-lg hover:shadow-gold/20"
+              className="group flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-gold/30 text-gold transition-all duration-300 hover:scale-105 hover:border-gold hover:bg-gold/10 hover:shadow-lg hover:shadow-gold/20"
               aria-label="Back to dashboard"
             >
               <span className="transition-transform duration-300 group-hover:-translate-x-0.5">←</span>
             </Link>
           )}
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-gold/60 md:text-xs">
+            <p className="text-label text-[10px] font-bold uppercase tracking-[0.25em] md:text-xs">
               ★ Champions of Champions ★
             </p>
             <h1 className="font-display text-lg font-bold text-cream md:text-2xl">{title}</h1>
             {subtitle && (
-              <p className="text-xs text-cream/60 md:text-sm">{subtitle}</p>
+              <p className="text-body text-xs md:text-sm">{subtitle}</p>
             )}
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={handleLogout} className="text-xs md:text-sm">
+        <Button variant="secondary" size="sm" onClick={handleLogout} className="text-xs md:text-sm">
           Logout
         </Button>
       </div>

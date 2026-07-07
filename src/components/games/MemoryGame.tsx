@@ -147,7 +147,7 @@ export function MemoryGame() {
               <button
                 key={tile.uniqueId}
                 onClick={() => handleTileClick(tile)}
-                className={`aspect-square rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-gold ${isMatched ? "tile-matched" : ""}`}
+                className={`aspect-square cursor-pointer rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-gold disabled:cursor-not-allowed ${isMatched ? "tile-matched" : ""}`}
                 disabled={isMatched}
                 aria-label={isFlipped ? tile.label : "Hidden tile"}
               >

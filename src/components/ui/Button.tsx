@@ -12,9 +12,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       primary:
         "bg-gradient-to-r from-gold to-gold-light text-maroon shadow-lg shadow-gold/25 hover:shadow-gold/40 hover:brightness-110 active:scale-[0.97]",
       secondary:
-        "border-2 border-gold/60 text-gold bg-gold/5 hover:bg-gold/15 hover:border-gold active:scale-[0.97]",
+        "border-2 border-gold/75 text-gold-light bg-gold/10 hover:bg-gold/20 hover:border-gold-light active:scale-[0.97]",
       ghost:
-        "border border-cream/25 text-cream bg-white/5 hover:bg-white/10 hover:border-gold/40 hover:text-cream active:scale-[0.97]",
+        "border border-cream/35 text-cream bg-white/8 hover:bg-white/14 hover:border-gold/50 hover:text-cream active:scale-[0.97]",
       danger:
         "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/25 hover:brightness-110 active:scale-[0.97]",
     };
@@ -30,7 +30,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled}
         className={cn(
-          "inline-flex items-center justify-center gap-2 rounded-full font-semibold",
+          "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full font-semibold",
           "transition-all duration-300 ease-out",
           "disabled:cursor-not-allowed disabled:opacity-50 disabled:scale-100 disabled:shadow-none",
           variants[variant],

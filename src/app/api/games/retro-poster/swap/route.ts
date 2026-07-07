@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requirePlayableSession } from "@/lib/require-playable-session";
 import { POSTER_TEMPLATES } from "@/lib/game-data/posters";
 import {
   buildReactorPayload,
@@ -51,6 +52,9 @@ async function loadPosterAsDataUri(
 }
 
 export async function POST(request: NextRequest) {
+  const { response } = await requirePlayableSession();
+  if (response) return response;
+
   try {
     const body = await request.json();
     const { sourceImage, posterId } = body as {

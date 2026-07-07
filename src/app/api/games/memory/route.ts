@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
+import { requirePlayableSession } from "@/lib/require-playable-session";
 import { createServiceClient } from "@/lib/supabase/server";
 
 export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { session, response } = await requirePlayableSession();
+  if (response) return response;
 
   try {
     const { actions, timeTakenSeconds, completed } = await request.json();

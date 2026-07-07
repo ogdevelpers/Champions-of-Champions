@@ -77,7 +77,7 @@ export default function RetroPosterPage() {
               <button
                 onClick={() => setSelectedPoster(poster)}
                 className={cn(
-                  "group w-full overflow-hidden rounded-2xl border-2 transition-all duration-300",
+                  "group w-full cursor-pointer overflow-hidden rounded-2xl border-2 transition-all duration-300",
                   selectedPoster.id === poster.id
                     ? "border-gold shadow-xl shadow-gold/25 scale-[1.02]"
                     : "border-gold/15 opacity-75 hover:opacity-100 hover:border-gold/40 hover:scale-[1.02]"

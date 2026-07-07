@@ -9,6 +9,8 @@ import { FadeIn } from "@/components/ui/Animated";
 
 export function LoginForm() {
   const [employeeId, setEmployeeId] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -24,7 +26,7 @@ export function LoginForm() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ employeeId }),
+        body: JSON.stringify({ employeeId, name, email }),
       });
 
       const data = await res.json();
@@ -43,6 +45,8 @@ export function LoginForm() {
     }
   };
 
+  const isValid = employeeId.trim() && name.trim() && email.trim();
+
   return (
     <div className="w-full max-w-md">
       <FadeIn direction="down">
@@ -57,36 +61,70 @@ export function LoginForm() {
           <h1 className="font-display text-4xl font-bold md:text-5xl">
             <span className="gold-gradient-text">Be The Champion</span>
           </h1>
-          <p className="mt-3 text-cream/55">Enter your employee ID to enter the spotlight</p>
+          <p className="text-body mt-3">
+            Enter your details to validate your employee ID and join the spotlight
+          </p>
         </div>
       </FadeIn>
 
       <FadeIn delay={150}>
         <Card glow className="p-8">
-          <form onSubmit={handleSubmit}>
-            <label htmlFor="employeeId" className="block text-sm font-medium text-gold/80">
-              Employee ID
-            </label>
-            <Input
-              id="employeeId"
-              type="text"
-              value={employeeId}
-              onChange={(e) => setEmployeeId(e.target.value.toUpperCase())}
-              placeholder="e.g. EMP001"
-              required
-              className="mt-2 text-lg"
-            />
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label htmlFor="employeeId" className="text-label block text-sm font-semibold">
+                Employee ID
+              </label>
+              <Input
+                id="employeeId"
+                type="text"
+                value={employeeId}
+                onChange={(e) => setEmployeeId(e.target.value.toUpperCase())}
+                placeholder="e.g. EMP001"
+                required
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="name" className="text-label block text-sm font-semibold">
+                Full Name
+              </label>
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+                required
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="email" className="text-label block text-sm font-semibold">
+                Email Address
+              </label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@company.com"
+                required
+                className="mt-2"
+              />
+            </div>
 
             {error && (
-              <p className="mt-3 animate-fade-in rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-300">
+              <p className="animate-fade-in rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-300">
                 {error}
               </p>
             )}
 
             <Button
               type="submit"
-              disabled={loading || !employeeId.trim()}
-              className="mt-6 w-full"
+              disabled={loading || !isValid}
+              className="mt-2 w-full"
               size="lg"
             >
               {loading ? (
@@ -103,7 +141,7 @@ export function LoginForm() {
       </FadeIn>
 
       <FadeIn delay={300}>
-        <p className="mt-8 text-center text-xs tracking-wide text-cream/35">
+        <p className="text-muted mt-8 text-center text-xs tracking-wide">
           Own the spotlight · Participate &amp; win exciting prizes
         </p>
       </FadeIn>

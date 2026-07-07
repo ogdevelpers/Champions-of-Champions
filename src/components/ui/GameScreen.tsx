@@ -25,8 +25,8 @@ export function GameStartCard({
       <Card glow className="text-center">
         <div className="animate-float mb-6 text-7xl">{emoji}</div>
         <h2 className="font-display text-3xl font-bold gold-gradient-text">{title}</h2>
-        {subtitle && <p className="mt-2 text-lg text-cream/80">{subtitle}</p>}
-        <p className="mx-auto mt-5 max-w-sm leading-relaxed text-cream/60">{description}</p>
+        {subtitle && <p className="text-body mt-2 text-lg">{subtitle}</p>}
+        <p className="text-body mx-auto mt-5 max-w-sm leading-relaxed">{description}</p>
         <Button onClick={onStart} className="mt-8 animate-pulse-gold" size="lg">
           {ctaLabel}
         </Button>

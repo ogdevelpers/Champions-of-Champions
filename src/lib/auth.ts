@@ -5,6 +5,24 @@ export const SESSION_COOKIE = "champions_employee_session";
 export interface EmployeeSession {
   employeeId: string;
   name: string | null;
+  email: string | null;
+  canPlayGames: boolean;
+}
+
+export function parseSessionValue(value: string): EmployeeSession | null {
+  try {
+    const parsed = JSON.parse(value) as Partial<EmployeeSession>;
+    if (!parsed.employeeId || typeof parsed.employeeId !== "string") return null;
+
+    return {
+      employeeId: parsed.employeeId,
+      name: parsed.name ?? null,
+      email: parsed.email ?? null,
+      canPlayGames: parsed.canPlayGames === true,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function getSession(): Promise<EmployeeSession | null> {
@@ -12,11 +30,7 @@ export async function getSession(): Promise<EmployeeSession | null> {
   const session = cookieStore.get(SESSION_COOKIE);
   if (!session?.value) return null;
 
-  try {
-    return JSON.parse(session.value) as EmployeeSession;
-  } catch {
-    return null;
-  }
+  return parseSessionValue(session.value);
 }
 
 export function sessionCookieOptions(maxAge = 60 * 60 * 24 * 7) {
@@ -27,4 +41,14 @@ export function sessionCookieOptions(maxAge = 60 * 60 * 24 * 7) {
     maxAge,
     path: "/",
   };
+}
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function isValidEmail(email: string): boolean {
+  return EMAIL_PATTERN.test(email.trim());
+}
+
+export function normalizeEmployeeId(employeeId: string): string {
+  return employeeId.trim().toUpperCase();
 }
