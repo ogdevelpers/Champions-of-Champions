@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 interface DashboardSectionProps {
   id?: string;
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description?: string;
   children: ReactNode;
@@ -36,10 +36,12 @@ export function DashboardSection({
       )}
     >
       <header className={cn(variant !== "default" && "mb-5 text-center sm:mb-6 sm:text-left md:mb-8")}>
-        <p className="text-label text-[11px] font-bold uppercase tracking-[0.28em]">
-          {eyebrow}
-        </p>
-        <h2 className="mt-2 font-display text-2xl font-bold text-cream md:text-3xl">
+        {eyebrow && (
+          <p className="text-label text-[11px] font-bold uppercase tracking-[0.28em]">
+            {eyebrow}
+          </p>
+        )}
+        <h2 className={cn("font-display text-2xl font-bold text-cream md:text-3xl", eyebrow && "mt-2")}>
           {title}
         </h2>
         {description && (

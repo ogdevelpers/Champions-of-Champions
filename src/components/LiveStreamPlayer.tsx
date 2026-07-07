@@ -85,7 +85,7 @@ export function LiveStreamPlayer({ className }: LiveStreamPlayerProps) {
 
   return (
     <div className={cn("flex w-full flex-col items-center", className)}>
-      <div className="mb-4 flex w-full max-w-[min(100%,360px)] flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-4 flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="inline-flex items-center justify-center gap-2 rounded-full border border-red-500/40 bg-red-500/15 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-red-100 sm:justify-start">
           <span className="h-2 w-2 animate-pulse rounded-full bg-red-400" />
           Broadcasting Live
@@ -103,7 +103,7 @@ export function LiveStreamPlayer({ className }: LiveStreamPlayerProps) {
 
       <div
         ref={playerRef}
-        className="relative aspect-[9/16] w-full max-w-[min(100%,360px)] overflow-hidden rounded-2xl border-2 border-gold/30 bg-black shadow-2xl shadow-black/60"
+        className="relative aspect-video w-full overflow-hidden rounded-2xl border-2 border-gold/30 bg-black shadow-2xl shadow-black/60"
       >
         <iframe
           src={streamUrl}
