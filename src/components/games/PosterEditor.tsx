@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { FadeIn } from "@/components/ui/Animated";
 import { downloadBlob } from "@/lib/utils";
-import { detectFaceLandmarks } from "@/lib/face-replacement/detector";
-import { compositeFaceOnPoster, compositeFaceOnPosterFallback, loadImage } from "@/lib/face-replacement/composite";
 
 interface PosterEditorProps {
   poster: PosterTemplate;
@@ -26,25 +24,31 @@ export function PosterEditor({ poster, selfieSrc, onSave }: PosterEditorProps) {
     setGenerating(true);
     setError(null);
     try {
-      const [posterImg, selfieImg] = await Promise.all([
-        loadImage(poster.imageUrl),
-        loadImage(selfieSrc),
-      ]);
+      const res = await fetch("/api/games/retro-poster/swap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceImage: selfieSrc,
+          posterId: poster.id,
+        }),
+      });
 
-      const selfieLandmarks = await detectFaceLandmarks(selfieImg);
+      const data = await res.json();
 
-      const result = selfieLandmarks
-        ? await compositeFaceOnPoster(posterImg, selfieImg, poster.targetFace, selfieLandmarks)
-        : await compositeFaceOnPosterFallback(posterImg, selfieImg, poster.targetFace);
+      if (!res.ok) {
+        throw new Error(data.error || "Face swap failed");
+      }
 
-      setPreviewUrl(result);
+      setPreviewUrl(data.image);
       setSaved(false);
-    } catch {
-      setError("Could not generate poster. Please try again.");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Could not generate poster. Please try again."
+      );
     } finally {
       setGenerating(false);
     }
-  }, [poster, selfieSrc]);
+  }, [poster.id, selfieSrc]);
 
   useEffect(() => {
     generatePoster();
@@ -75,7 +79,7 @@ export function PosterEditor({ poster, selfieSrc, onSave }: PosterEditorProps) {
       <div className="relative aspect-[5/7] w-full max-w-xs overflow-hidden rounded-2xl border-2 border-gold/35 bg-maroon-dark shadow-2xl shadow-black/40">
         {generating && !previewUrl ? (
           <div className="flex h-full items-center justify-center shimmer-bg">
-            <LoadingSpinner label="Aligning your face..." />
+            <LoadingSpinner label="Swapping your face..." />
           </div>
         ) : previewUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -90,13 +94,13 @@ export function PosterEditor({ poster, selfieSrc, onSave }: PosterEditorProps) {
       )}
 
       <p className="text-center text-sm text-cream/55">
-        Your face is mapped onto the hero in{" "}
+        Your face is swapped onto the hero in{" "}
         <span className="font-semibold text-gold">{poster.title}</span>
       </p>
 
       <div className="flex flex-wrap justify-center gap-3">
         <Button onClick={generatePoster} variant="ghost" disabled={generating}>
-          {generating ? "Aligning..." : "↻ Refresh"}
+          {generating ? "Swapping..." : "↻ Refresh"}
         </Button>
         {previewUrl && (
           <>

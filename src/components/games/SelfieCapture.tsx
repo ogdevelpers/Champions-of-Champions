@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { FadeIn } from "@/components/ui/Animated";
-import { detectFaceLandmarks } from "@/lib/face-replacement/detector";
-import { loadImage } from "@/lib/face-replacement/composite";
 
 interface SelfieCaptureProps {
   onCapture: (imageDataUrl: string) => void;
@@ -19,8 +17,6 @@ export function SelfieCapture({ onCapture }: SelfieCaptureProps) {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
-  const [validating, setValidating] = useState(false);
-  const [faceError, setFaceError] = useState<string | null>(null);
 
   const startCamera = async () => {
     try {
@@ -64,34 +60,18 @@ export function SelfieCapture({ onCapture }: SelfieCaptureProps) {
 
     const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
     setPreview(dataUrl);
-    setFaceError(null);
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
   };
 
   const retake = async () => {
     setPreview(null);
-    setFaceError(null);
     await startCamera();
   };
 
-  const handleContinue = async () => {
+  const handleContinue = () => {
     if (!preview) return;
-    setValidating(true);
-    setFaceError(null);
-    try {
-      const img = await loadImage(preview);
-      const landmarks = await detectFaceLandmarks(img);
-      if (!landmarks) {
-        setFaceError("No face detected. Please retake — face the camera with good lighting.");
-        return;
-      }
-      onCapture(preview);
-    } catch {
-      setFaceError("Could not validate face. Please try again.");
-    } finally {
-      setValidating(false);
-    }
+    onCapture(preview);
   };
 
   return (
@@ -130,12 +110,6 @@ export function SelfieCapture({ onCapture }: SelfieCaptureProps) {
           </div>
         )}
 
-        {faceError && (
-          <p className="mt-4 animate-fade-in rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-center text-sm text-red-300">
-            {faceError}
-          </p>
-        )}
-
         <div className="relative mx-auto mt-6 aspect-square max-w-sm overflow-hidden rounded-2xl border-2 border-gold/35 bg-black shadow-2xl shadow-black/40">
           {!preview && ready && (
             <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
@@ -169,8 +143,8 @@ export function SelfieCapture({ onCapture }: SelfieCaptureProps) {
               <Button onClick={retake} variant="secondary">
                 Retake
               </Button>
-              <Button onClick={handleContinue} size="lg" disabled={validating}>
-                {validating ? "Detecting face..." : "Continue →"}
+              <Button onClick={handleContinue} size="lg">
+                Continue →
               </Button>
             </>
           )}

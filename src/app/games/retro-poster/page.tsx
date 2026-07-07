@@ -65,7 +65,7 @@ export default function RetroPosterPage() {
           </p>
         </FadeIn>
 
-        <div className="mb-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="mb-10 grid grid-cols-2 gap-4 sm:grid-cols-3">
           {POSTER_TEMPLATES.map((poster, i) => (
             <Stagger key={poster.id} index={i}>
               <button
