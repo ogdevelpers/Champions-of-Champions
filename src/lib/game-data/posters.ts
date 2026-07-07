@@ -13,7 +13,7 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     title: "DEEWAAR",
     subtitle: "The Wall of Conflict",
     year: "1975",
-    imageUrl: "/games/posters/deewaar.png",
+    imageUrl: "/posters/deewaar.png",
     accentColor: "#FFD700",
   },
   {
@@ -21,7 +21,7 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     title: "DELHI-6",
     subtitle: "Stories from the Walled City",
     year: "2009",
-    imageUrl: "/games/posters/delhi-6.png",
+    imageUrl: "/posters/delhi-6.png",
     accentColor: "#c9a227",
   },
   {
@@ -29,7 +29,7 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     title: "AGNEEPATH",
     subtitle: "The Path of Fire",
     year: "2012",
-    imageUrl: "/games/posters/agneepath.png",
+    imageUrl: "/posters/agneepath.png",
     accentColor: "#ff6b35",
   },
 ];

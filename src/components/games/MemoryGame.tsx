@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { createShuffledDeck } from "@/lib/game-data/memory-tiles";
+import { createShuffledDeck, MEMORY_TILES } from "@/lib/game-data/memory-tiles";
 import { Button } from "@/components/ui/Button";
 import { StatBox } from "@/components/ui/StatBox";
 import { GameStartCard, GameResultCard } from "@/components/ui/GameScreen";
@@ -9,6 +9,8 @@ import { FadeIn } from "@/components/ui/Animated";
 import { formatTime } from "@/lib/utils";
 
 type DeckTile = ReturnType<typeof createShuffledDeck>[number];
+
+const TOTAL_PAIRS = MEMORY_TILES.length;
 
 export function MemoryGame() {
   const [deck, setDeck] = useState<DeckTile[]>([]);
@@ -79,7 +81,7 @@ export function MemoryGame() {
         setFlipped([]);
         lockRef.current = false;
 
-        if (newMatched.length === 4) {
+        if (newMatched.length === TOTAL_PAIRS) {
           setCompleted(true);
           if (timerRef.current) clearInterval(timerRef.current);
           saveResults(actions + 1, elapsed);
@@ -98,7 +100,7 @@ export function MemoryGame() {
       <GameStartCard
         emoji="🧩"
         title="Memory Match"
-        description="Flip tiles one at a time to find matching pairs. Match all 4 pairs to win!"
+        description={`Flip tiles one at a time to find matching pairs. Match all ${TOTAL_PAIRS} pairs to win!`}
         onStart={initGame}
       />
     );
@@ -136,21 +138,8 @@ export function MemoryGame() {
       </FadeIn>
 
       <FadeIn delay={100}>
-        <div className="mx-auto grid max-w-md grid-cols-3 gap-3 perspective-1000">
-          {Array.from({ length: 9 }).map((_, index) => {
-            if (index === 4) {
-              return (
-                <div
-                  key="center"
-                  className="flex aspect-square animate-float items-center justify-center rounded-2xl border-2 border-gold/30 bg-gradient-to-br from-gold/25 to-maroon-light shadow-inner"
-                >
-                  <span className="text-3xl text-gold">★</span>
-                </div>
-              );
-            }
-
-            const tileIndex = index < 4 ? index : index - 1;
-            const tile = deck[tileIndex];
+        <div className="mx-auto grid max-w-2xl grid-cols-3 gap-3 perspective-1000 sm:grid-cols-4">
+          {deck.map((tile) => {
             const isFlipped = flipped.includes(tile.uniqueId) || matched.includes(tile.pairId);
             const isMatched = matched.includes(tile.pairId);
 
@@ -160,24 +149,25 @@ export function MemoryGame() {
                 onClick={() => handleTileClick(tile)}
                 className={`aspect-square rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-gold ${isMatched ? "tile-matched" : ""}`}
                 disabled={isMatched}
+                aria-label={isFlipped ? tile.label : "Hidden tile"}
               >
                 <div
                   className="tile-3d relative h-full w-full"
                   style={{ transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)" }}
                 >
                   <div className="tile-face absolute inset-0 flex items-center justify-center rounded-2xl border-2 border-gold/25 bg-gradient-to-br from-emerald-500/20 to-teal-600/20 shadow-md">
-                    <span className="text-3xl opacity-50">🎬</span>
+                    <span className="text-3xl opacity-50">★</span>
                   </div>
                   <div
-                    className="tile-face absolute inset-0 flex flex-col items-center justify-center rounded-2xl border-2 shadow-lg"
-                    style={{
-                      transform: "rotateY(180deg)",
-                      backgroundColor: tile.color,
-                      borderColor: `${tile.color}cc`,
-                    }}
+                    className="tile-face absolute inset-0 overflow-hidden rounded-2xl border-2 border-white/20 shadow-lg"
+                    style={{ transform: "rotateY(180deg)" }}
                   >
-                    <span className="text-4xl drop-shadow">{tile.emoji}</span>
-                    <span className="mt-1 text-[10px] font-semibold text-white/90">{tile.label}</span>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={tile.imageUrl}
+                      alt={tile.label}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                 </div>
               </button>

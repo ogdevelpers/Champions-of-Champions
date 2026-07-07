@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { FadeIn, Stagger } from "@/components/ui/Animated";
 import { cn } from "@/lib/utils";
+import { gameActionButtonClass } from "@/components/ui/GameActionBar";
 
 export default function RetroPosterPage() {
   const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
@@ -31,7 +32,7 @@ export default function RetroPosterPage() {
     return (
       <PageShell>
         <GameHeader title="Retro Posters" subtitle="Step 1 — Take your selfie" />
-        <main className="mx-auto max-w-6xl px-4 py-8 md:py-12">
+        <main className="mx-auto max-w-6xl px-4 py-8 pb-12 md:py-12 md:pb-16">
           <SelfieCapture onCapture={setSelfieUrl} />
         </main>
       </PageShell>
@@ -42,7 +43,7 @@ export default function RetroPosterPage() {
     <PageShell>
       <GameHeader title="Retro Posters" subtitle="Step 2 — Choose your poster" />
 
-      <main className="mx-auto max-w-6xl px-4 py-8 md:py-12">
+      <main className="mx-auto max-w-6xl px-4 py-8 pb-12 md:py-12 md:pb-16">
         <FadeIn className="mb-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <div className="flex items-center gap-3 rounded-full border border-gold/25 bg-maroon-light/50 px-4 py-2 shadow-lg backdrop-blur-sm">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -54,7 +55,12 @@ export default function RetroPosterPage() {
             <span className="text-sm text-cream/70">Selfie ready</span>
             <Badge variant="outline">Step 2</Badge>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => setSelfieUrl(null)}>
+          <Button
+            variant="secondary"
+            size="sm"
+            className={gameActionButtonClass}
+            onClick={() => setSelfieUrl(null)}
+          >
             ← Retake Selfie
           </Button>
         </FadeIn>

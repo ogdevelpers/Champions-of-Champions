@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { FadeIn } from "@/components/ui/Animated";
 import { downloadBlob } from "@/lib/utils";
+import { GameActionBar, gameActionButtonClass } from "@/components/ui/GameActionBar";
 
 interface PosterEditorProps {
   poster: PosterTemplate;
@@ -98,21 +99,35 @@ export function PosterEditor({ poster, selfieSrc, onSave }: PosterEditorProps) {
         <span className="font-semibold text-gold">{poster.title}</span>
       </p>
 
-      <div className="flex flex-wrap justify-center gap-3">
-        <Button onClick={generatePoster} variant="ghost" disabled={generating}>
+      <GameActionBar className="max-w-lg">
+        <Button
+          onClick={generatePoster}
+          variant="secondary"
+          disabled={generating}
+          className={gameActionButtonClass}
+        >
           {generating ? "Swapping..." : "↻ Refresh"}
         </Button>
         {previewUrl && (
           <>
-            <Button onClick={handleDownload} variant="secondary">
+            <Button
+              onClick={handleDownload}
+              variant="primary"
+              className={gameActionButtonClass}
+            >
               Download Poster
             </Button>
-            <Button onClick={handleSave} disabled={saving || saved}>
+            <Button
+              onClick={handleSave}
+              variant="secondary"
+              disabled={saving || saved}
+              className={gameActionButtonClass}
+            >
               {saved ? "Saved ✓" : saving ? "Saving..." : "Save to Gallery"}
             </Button>
           </>
         )}
-      </div>
+      </GameActionBar>
     </FadeIn>
   );
 }

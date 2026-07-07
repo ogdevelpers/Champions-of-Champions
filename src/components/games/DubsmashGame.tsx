@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Stagger } from "@/components/ui/Animated";
 import { downloadBlob } from "@/lib/utils";
+import { GameActionBar, gameActionButtonClass } from "@/components/ui/GameActionBar";
 
 export function DubsmashGame() {
   const [selectedClip, setSelectedClip] = useState<DubsmashClip | null>(null);
@@ -50,7 +51,7 @@ export function DubsmashGame() {
     try {
       setCameraError(null);
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: 640, height: 480 },
+        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 640 } },
         audio: true,
       });
       streamRef.current = stream;
@@ -166,7 +167,7 @@ export function DubsmashGame() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 animate-fade-in-up">
+    <div className="mx-auto max-w-2xl space-y-6 pb-4 animate-fade-in-up">
       <Card glow>
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
@@ -175,7 +176,7 @@ export function DubsmashGame() {
               {selectedClip.title}
             </h3>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => setSelectedClip(null)}>
+          <Button variant="secondary" size="sm" onClick={() => setSelectedClip(null)}>
             ← Change
           </Button>
         </div>
@@ -190,7 +191,7 @@ export function DubsmashGame() {
         </div>
       )}
 
-      <div className="relative overflow-hidden rounded-2xl border-2 border-gold/30 bg-black shadow-2xl shadow-black/50 aspect-video">
+      <div className="relative mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-2xl border-2 border-gold/30 bg-black shadow-2xl shadow-black/50">
         {recordedUrl ? (
           <video ref={playbackRef} src={recordedUrl} controls className="h-full w-full object-cover" />
         ) : (
@@ -216,27 +217,47 @@ export function DubsmashGame() {
         )}
       </div>
 
-      <div className="flex flex-wrap justify-center gap-3">
+      <GameActionBar className="max-w-lg mx-auto">
         {!recordedUrl && !recording && countdown === null && (
-          <Button onClick={startRecording} size="lg" disabled={!!cameraError} className="animate-pulse-gold">
+          <Button
+            onClick={startRecording}
+            size="lg"
+            disabled={!!cameraError}
+            className={`${gameActionButtonClass} animate-pulse-gold`}
+          >
             🎬 Start Recording
           </Button>
         )}
         {recording && (
-          <Button onClick={stopRecording} variant="danger" size="lg">
+          <Button
+            onClick={stopRecording}
+            variant="danger"
+            size="lg"
+            className={gameActionButtonClass}
+          >
             ⏹ Stop Recording
           </Button>
         )}
         {recordedUrl && (
           <>
-            <Button onClick={handleDownload} variant="secondary">
+            <Button
+              onClick={handleDownload}
+              variant="primary"
+              className={gameActionButtonClass}
+            >
               Download Video
             </Button>
-            <Button onClick={handleSave} disabled={saving || saved}>
+            <Button
+              onClick={handleSave}
+              variant="secondary"
+              disabled={saving || saved}
+              className={gameActionButtonClass}
+            >
               {saved ? "Saved ✓" : saving ? "Saving..." : "Save to Gallery"}
             </Button>
             <Button
-              variant="ghost"
+              variant="secondary"
+              className={gameActionButtonClass}
               onClick={() => {
                 setRecordedBlob(null);
                 setRecordedUrl(null);
@@ -248,7 +269,7 @@ export function DubsmashGame() {
             </Button>
           </>
         )}
-      </div>
+      </GameActionBar>
     </div>
   );
 }

@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile } from "fs/promises";
-import path from "path";
 import { POSTER_TEMPLATES } from "@/lib/game-data/posters";
 import {
   buildReactorPayload,
@@ -8,22 +6,48 @@ import {
   ReactorSwapResponse,
 } from "@/lib/face-replacement/reactor";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
-function toBase64DataUri(buffer: Buffer, mimeType: string): string {
-  return `data:${mimeType};base64,${buffer.toString("base64")}`;
+function mimeFromUrl(url: string): string {
+  const ext = url.split(".").pop()?.toLowerCase();
+  if (ext === "png") return "image/png";
+  if (ext === "webp") return "image/webp";
+  return "image/jpeg";
 }
 
-async function loadPosterAsDataUri(imageUrl: string): Promise<string> {
-  const relativePath = imageUrl.replace(/^\//, "");
-  const filePath = path.join(process.cwd(), "public", relativePath);
-  const buffer = await readFile(filePath);
-  const ext = path.extname(filePath).toLowerCase();
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  const chunkSize = 0x8000;
 
-  const mimeType =
-    ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
 
-  return toBase64DataUri(buffer, mimeType);
+  return btoa(binary);
+}
+
+async function loadPosterAsDataUri(
+  request: NextRequest,
+  imageUrl: string
+): Promise<string> {
+  const origin = new URL(request.url).origin;
+  const posterUrl = new URL(imageUrl, origin);
+  const response = await fetch(posterUrl);
+
+  if (!response.ok) {
+    throw new Error(`Failed to load poster: ${response.status}`);
+  }
+
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.startsWith("image/")) {
+    throw new Error(`Poster asset is not an image (${contentType || "unknown"})`);
+  }
+
+  const buffer = await response.arrayBuffer();
+  const mimeType = mimeFromUrl(imageUrl);
+
+  return `data:${mimeType};base64,${arrayBufferToBase64(buffer)}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -46,7 +70,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid poster" }, { status: 400 });
     }
 
-    const targetImage = await loadPosterAsDataUri(poster.imageUrl);
+    const targetImage = await loadPosterAsDataUri(request, poster.imageUrl);
     const payload = buildReactorPayload(sourceImage, targetImage);
 
     const reactorResponse = await fetch(getReactorApiUrl(), {

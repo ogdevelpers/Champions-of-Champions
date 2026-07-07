@@ -1,21 +1,27 @@
 export interface MemoryTile {
   id: string;
-  emoji: string;
   label: string;
-  color: string;
+  imageUrl: string;
 }
 
 export const MEMORY_TILES: MemoryTile[] = [
-  { id: "crown", emoji: "👑", label: "Customer First", color: "#e63946" },
-  { id: "diamond", emoji: "💎", label: "Integrity", color: "#457b9d" },
-  { id: "leaf", emoji: "🌿", label: "People", color: "#2a9d8f" },
-  { id: "flower", emoji: "🌸", label: "Empathy", color: "#9b5de5" },
+  { id: "customer-first", label: "Customer First", imageUrl: "/memory/customer-first.png" },
+  { id: "integrity", label: "Integrity", imageUrl: "/memory/integrity.png" },
+  { id: "people", label: "People", imageUrl: "/memory/people.png" },
+  { id: "empathy", label: "Empathy", imageUrl: "/memory/empathy.png" },
+  { id: "performance", label: "Performance", imageUrl: "/memory/performance.png" },
+  { id: "passion", label: "Passion", imageUrl: "/memory/passion.png" },
 ];
 
-export function createShuffledDeck(): { pairId: string; uniqueId: string; emoji: string; label: string; color: string }[] {
+export function createShuffledDeck(): {
+  pairId: string;
+  uniqueId: string;
+  label: string;
+  imageUrl: string;
+}[] {
   const pairs = MEMORY_TILES.flatMap((tile) => [
-    { pairId: tile.id, uniqueId: `${tile.id}-a`, emoji: tile.emoji, label: tile.label, color: tile.color },
-    { pairId: tile.id, uniqueId: `${tile.id}-b`, emoji: tile.emoji, label: tile.label, color: tile.color },
+    { pairId: tile.id, uniqueId: `${tile.id}-a`, label: tile.label, imageUrl: tile.imageUrl },
+    { pairId: tile.id, uniqueId: `${tile.id}-b`, label: tile.label, imageUrl: tile.imageUrl },
   ]);
 
   for (let i = pairs.length - 1; i > 0; i--) {
