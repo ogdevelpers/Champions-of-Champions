@@ -130,8 +130,7 @@ export function LiveStreamPlayer({ className }: LiveStreamPlayerProps) {
           <iframe
             src={streamUrl}
             title="Champions of Champions live stream"
-            className="absolute inset-0 h-full w-full border-0"
-            scrolling="no"
+            className="absolute inset-0 h-full w-full overflow-hidden border-0"
             allowFullScreen
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen; web-share"
             referrerPolicy="strict-origin-when-cross-origin"

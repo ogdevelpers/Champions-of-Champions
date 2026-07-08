@@ -3,10 +3,12 @@
 :root {
   --maroon: #5c0a1a;
   --maroon-light: #7a1530;
-  --maroon-dark: #3d0612;
+  --maroon-dark: #4b1922;
   --gold: #d4af37;
   --gold-light: #f0d060;
   --cream: #faf3e8;
+  --brand-header: #4b1922;
+  --brand-header-rgb: 75 25 34;
 }
 
 @theme inline {
@@ -16,6 +18,7 @@
   --color-gold: var(--gold);
   --color-gold-light: var(--gold-light);
   --color-cream: var(--cream);
+  --color-brand-header: var(--brand-header);
   --font-display: Georgia, "Times New Roman", serif;
   --font-sans: var(--font-geist-sans);
 }
@@ -67,7 +70,63 @@ button:disabled,
   inset: 0;
   pointer-events: none;
   background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.35) 100%);
+  z-index: 1;
+}
+
+.cinema-background {
+  background-color: var(--maroon-dark);
+  background-image: url("/images/champions-background.png");
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.cinema-background::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgb(var(--brand-header-rgb) / 0.45) 0%,
+    rgb(var(--brand-header-rgb) / 0.68) 40%,
+    rgb(var(--brand-header-rgb) / 0.82) 100%
+  );
   z-index: 0;
+}
+
+.cinema-background--clear::after {
+  display: none;
+}
+
+.cinema-vignette--clear::before {
+  display: none;
+}
+
+.header-gradient {
+  background: var(--brand-header);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.login-panel {
+  background: var(--brand-header) !important;
+}
+
+.panel-surface {
+  background: rgb(var(--brand-header-rgb) / 0.75);
+}
+
+.panel-elevated {
+  background: rgb(var(--brand-header-rgb) / 0.9);
+}
+
+@media (max-width: 768px) {
+  .cinema-background {
+    background-attachment: scroll;
+    background-position: center center;
+  }
 }
 
 /* ── Keyframes ── */
@@ -162,7 +221,7 @@ button:disabled,
 
 /* ── Component utilities ── */
 .glass-panel {
-  background: rgba(61, 6, 18, 0.88);
+  background: rgb(var(--brand-header-rgb) / 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(212, 175, 55, 0.28);

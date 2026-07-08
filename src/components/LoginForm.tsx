@@ -50,25 +50,18 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-md">
       <FadeIn direction="down">
-        <div className="mb-8 text-center">
-          <div className="mb-5 inline-flex animate-marquee items-center gap-2 rounded-full border border-gold/30 bg-gold/5 px-5 py-1.5 shadow-lg shadow-gold/10">
-            <span className="text-gold">★</span>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.35em] text-gold/90">
-              Champions of Champions
-            </span>
-            <span className="text-gold">★</span>
-          </div>
-          <h1 className="font-display text-4xl font-bold md:text-5xl">
+        <div className="mb-6 text-center sm:mb-8">
+          <h1 className="font-display text-3xl font-bold sm:text-4xl md:text-5xl">
             <span className="gold-gradient-text">Be The Champion</span>
           </h1>
-          <p className="text-body mt-3">
+          <p className="text-body mx-auto mt-3 max-w-sm text-sm leading-relaxed sm:text-base">
             Enter your details to validate your employee ID and join the spotlight
           </p>
         </div>
       </FadeIn>
 
       <FadeIn delay={150}>
-        <Card glow className="p-8">
+        <Card glow className="login-panel border-gold/35 p-6 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label htmlFor="employeeId" className="text-label block text-sm font-semibold">

@@ -9,7 +9,7 @@ interface DashboardWelcomeProps {
 export function DashboardWelcome({ session }: DashboardWelcomeProps) {
   return (
     <Card glow className="overflow-hidden p-0">
-      <div className="bg-gradient-to-r from-gold/15 via-maroon-dark/80 to-maroon-dark/90 px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10">
+      <div className="bg-gradient-to-r from-gold/15 via-brand-header/80 to-brand-header/90 px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="text-center md:text-left">
             <Badge variant="outline" className="mb-4">
@@ -25,13 +25,13 @@ export function DashboardWelcome({ session }: DashboardWelcomeProps) {
           </div>
 
           <dl className="grid w-full grid-cols-1 gap-3 sm:max-w-md md:max-w-xs md:shrink-0">
-            <div className="rounded-2xl border border-gold/25 bg-maroon-dark/80 px-4 py-3 text-center sm:text-left">
+            <div className="rounded-2xl border border-gold/25 bg-brand-header/80 px-4 py-3 text-center sm:text-left">
               <dt className="text-label text-[11px] font-semibold uppercase tracking-wider">
                 Employee ID
               </dt>
               <dd className="mt-1 font-bold text-gold-light">{session.employeeId}</dd>
             </div>
-            <div className="rounded-2xl border border-gold/25 bg-maroon-dark/80 px-4 py-3 text-center sm:text-left">
+            <div className="rounded-2xl border border-gold/25 bg-brand-header/80 px-4 py-3 text-center sm:text-left">
               <dt className="text-label text-[11px] font-semibold uppercase tracking-wider">
                 Game Access
               </dt>
@@ -44,7 +44,7 @@ export function DashboardWelcome({ session }: DashboardWelcomeProps) {
               </dd>
             </div>
             {session.email && (
-              <div className="rounded-2xl border border-gold/25 bg-maroon-dark/80 px-4 py-3 text-center sm:text-left">
+              <div className="rounded-2xl border border-gold/25 bg-brand-header/80 px-4 py-3 text-center sm:text-left">
                 <dt className="text-label text-[11px] font-semibold uppercase tracking-wider">
                   Email
                 </dt>

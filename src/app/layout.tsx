@@ -18,8 +18,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geist.variable} h-full scroll-smooth`}>
-      <body className="min-h-full antialiased sparkle-bg">{children}</body>
+    <html lang="en" className={`${geist.variable} h-full scroll-smooth`} suppressHydrationWarning>
+      <body className="min-h-full antialiased sparkle-bg" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }

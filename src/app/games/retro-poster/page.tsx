@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { GameHeader } from "@/components/GameHeader";
-import { PageShell } from "@/components/PageShell";
+import { GamePageLayout } from "@/components/GamePageLayout";
 import { SelfieCapture } from "@/components/games/SelfieCapture";
 import { PosterEditor } from "@/components/games/PosterEditor";
 import { POSTER_TEMPLATES } from "@/lib/game-data/posters";
@@ -30,20 +29,17 @@ export default function RetroPosterPage() {
 
   if (!selfieUrl) {
     return (
-      <PageShell>
-        <GameHeader title="Retro Posters" subtitle="Step 1 — Take your selfie" />
-        <main className="mx-auto max-w-6xl px-4 py-8 pb-12 md:py-12 md:pb-16">
+      <GamePageLayout title="Retro Posters" subtitle="Step 1 — Take your selfie">
+        <main className="mx-auto max-w-6xl flex-1 px-4 py-8 pb-12 md:py-12 md:pb-16">
           <SelfieCapture onCapture={setSelfieUrl} />
         </main>
-      </PageShell>
+      </GamePageLayout>
     );
   }
 
   return (
-    <PageShell>
-      <GameHeader title="Retro Posters" subtitle="Step 2 — Choose your poster" />
-
-      <main className="mx-auto max-w-6xl px-4 py-8 pb-12 md:py-12 md:pb-16">
+    <GamePageLayout title="Retro Posters" subtitle="Step 2 — Choose your poster">
+      <main className="mx-auto max-w-6xl flex-1 px-4 py-8 pb-12 md:py-12 md:pb-16">
         <FadeIn className="mb-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <div className="flex items-center gap-3 rounded-full border border-gold/25 bg-maroon-light/50 px-4 py-2 shadow-lg backdrop-blur-sm">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -89,7 +85,7 @@ export default function RetroPosterPage() {
                   alt={poster.title}
                   className="aspect-[5/7] w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <p className="bg-maroon-dark/90 py-2.5 text-center text-xs font-bold tracking-wider text-gold">
+                <p className="bg-brand-header/90 py-2.5 text-center text-xs font-bold tracking-wider text-gold">
                   {poster.title}
                 </p>
               </button>
@@ -99,6 +95,6 @@ export default function RetroPosterPage() {
 
         <PosterEditor poster={selectedPoster} selfieSrc={selfieUrl} onSave={handleSave} />
       </main>
-    </PageShell>
+    </GamePageLayout>
   );
 }

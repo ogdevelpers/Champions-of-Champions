@@ -28,9 +28,9 @@ export function DashboardSection({
       className={cn(
         "scroll-mt-24",
         variant === "stream" &&
-          "rounded-2xl border border-gold/30 bg-[rgba(20,4,8,0.72)] p-4 sm:rounded-3xl sm:p-6 md:p-8",
+          "panel-surface rounded-2xl border border-gold/30 p-4 sm:rounded-3xl sm:p-6 md:p-8",
         variant === "elevated" &&
-          "rounded-2xl border border-gold/30 bg-[rgba(61,6,18,0.82)] p-4 shadow-xl shadow-black/30 sm:rounded-3xl sm:p-6 md:p-8",
+          "panel-elevated rounded-2xl border border-gold/30 p-4 shadow-xl shadow-black/30 sm:rounded-3xl sm:p-6 md:p-8",
         variant === "default" && "space-y-6",
         className
       )}

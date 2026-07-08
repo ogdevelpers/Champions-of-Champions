@@ -87,7 +87,7 @@ function GameCard({
     >
       <div className={cn("bg-gradient-to-br p-5 sm:p-6", game.accent)}>
         <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:gap-5 sm:text-left">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-gold/20 bg-maroon-dark/50 text-3xl shadow-inner transition-all duration-500 sm:h-16 sm:w-16 sm:text-4xl group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-lg group-hover:shadow-gold/20">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-gold/20 bg-brand-header/50 text-3xl shadow-inner transition-all duration-500 sm:h-16 sm:w-16 sm:text-4xl group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-lg group-hover:shadow-gold/20">
             {game.emoji}
           </div>
           <div className="flex min-w-0 flex-1 flex-col items-center sm:items-start">

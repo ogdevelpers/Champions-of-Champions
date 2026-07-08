@@ -77,7 +77,7 @@ export function PosterEditor({ poster, selfieSrc, onSave }: PosterEditorProps) {
 
   return (
     <FadeIn className="flex flex-col items-center gap-6">
-      <div className="relative aspect-[5/7] w-full max-w-xs overflow-hidden rounded-2xl border-2 border-gold/35 bg-maroon-dark shadow-2xl shadow-black/40">
+      <div className="relative aspect-[5/7] w-full max-w-xs overflow-hidden rounded-2xl border-2 border-gold/35 bg-brand-header shadow-2xl shadow-black/40">
         {generating && !previewUrl ? (
           <div className="flex h-full items-center justify-center shimmer-bg">
             <LoadingSpinner label="Swapping your face..." />

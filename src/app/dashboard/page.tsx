@@ -1,7 +1,7 @@
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
-import { GameHeader } from "@/components/GameHeader";
+import { AppHeader } from "@/components/AppHeader";
 import { GameGrid } from "@/components/GameGrid";
 import { LiveStreamPlayer } from "@/components/LiveStreamPlayer";
 import { PageShell } from "@/components/PageShell";
@@ -21,14 +21,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const showIneligibleMessage = params.ineligible === "1" || !session.canPlayGames;
 
   return (
-    <PageShell>
-      <GameHeader
-        title="Champions Dashboard"
-        subtitle="Live event & games"
-        showBack={false}
+    <PageShell overlay={false}>
+      <AppHeader
+        title="Live Event & Games"
+        subtitle="Watch the stream and play Bollywood games"
+        showLogout
       />
 
-      <main className="mx-auto w-full max-w-6xl space-y-8 px-4 py-6 pb-14 sm:space-y-10 sm:py-8 sm:pb-16 md:space-y-12 md:py-10">
+      <main className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-6 pb-14 sm:space-y-10 sm:py-8 sm:pb-16 md:space-y-12 md:py-10">
         {showIneligibleMessage && (
           <FadeIn>
             <div className="rounded-2xl border border-amber-400/50 bg-amber-500/20 px-5 py-4 text-center text-sm font-medium text-amber-50">
@@ -65,7 +65,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           </DashboardSection>
         </FadeIn>
 
-        <div className="relative z-20 rounded-2xl border-2 border-gold bg-maroon-dark px-4 py-4 text-center shadow-[0_8px_32px_rgba(0,0,0,0.5)] sm:px-6 sm:py-5">
+        <div className="relative z-20 rounded-2xl border-2 border-gold bg-brand-header/90 px-4 py-4 text-center shadow-[0_8px_32px_rgba(0,0,0,0.5)] sm:px-6 sm:py-5">
           <p className="font-display text-sm font-bold uppercase leading-relaxed tracking-[0.18em] text-cream sm:text-base">
             <span className="text-gold">★</span> Be The Champion · Own The Spotlight{" "}
             <span className="text-gold">★</span>

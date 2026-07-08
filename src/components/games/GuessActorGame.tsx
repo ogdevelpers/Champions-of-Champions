@@ -149,7 +149,7 @@ export function GuessActorGame() {
         ))}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gold/20 bg-maroon-dark/95 px-4 py-4 backdrop-blur-xl">
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gold/20 bg-brand-header/95 px-4 py-4 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl justify-center">
           <Button onClick={() => handleSubmit()} variant="primary" size="sm" className="w-full max-w-md shadow-xl shadow-gold/20">
             Submit Answers ✓
