@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { getLiveStreamUrl, logLiveStreamEvent } from "@/lib/live-stream";
+import { useLiveStreamTracking } from "@/hooks/useLiveStreamTracking";
+import { getLiveStreamUrl, isDirectVideoStream } from "@/lib/live-stream";
 import { cn } from "@/lib/utils";
 
 interface LiveStreamPlayerProps {
@@ -11,62 +12,62 @@ interface LiveStreamPlayerProps {
 
 export function LiveStreamPlayer({ className }: LiveStreamPlayerProps) {
   const streamUrl = getLiveStreamUrl();
+  const useNativeVideo = isDirectVideoStream(streamUrl);
   const playerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [playbackBlocked, setPlaybackBlocked] = useState(false);
 
-  const track = useCallback((action: string, metadata: Record<string, unknown> = {}) => {
-    void logLiveStreamEvent(action, metadata);
-  }, []);
+  const { track } = useLiveStreamTracking({
+    playerRef,
+    videoRef,
+    useNativeVideo,
+  });
 
   useEffect(() => {
-    track("stream_mounted", { layout: "section" });
-
     const player = playerRef.current;
     if (!player) return;
 
-    const visibilityObserver = new IntersectionObserver(
-      ([entry]) => {
-        track(entry.isIntersecting ? "visible_in_viewport" : "hidden_from_viewport", {
-          intersectionRatio: entry.intersectionRatio,
-        });
-      },
-      { threshold: [0, 0.25, 0.5, 0.75, 1] }
-    );
-
-    visibilityObserver.observe(player);
-
-    const handleVisibilityChange = () => {
-      track(document.hidden ? "tab_hidden" : "tab_visible");
-    };
-
     const handleFullscreenChange = () => {
-      const active = document.fullscreenElement === player;
-      setIsFullscreen(active);
-      track(active ? "wrapper_fullscreen_enter" : "wrapper_fullscreen_exit");
+      setIsFullscreen(document.fullscreenElement === player);
     };
 
-    const handleMessage = (event: MessageEvent) => {
-      if (typeof event.origin !== "string") return;
-      if (!event.origin.includes("webcastlive.co.in")) return;
-
-      track("player_message", {
-        origin: event.origin,
-        data: event.data,
-      });
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    window.addEventListener("message", handleMessage);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
 
-    return () => {
-      visibilityObserver.disconnect();
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      window.removeEventListener("message", handleMessage);
-      track("stream_unmounted");
+  useEffect(() => {
+    if (!useNativeVideo) return;
+
+    const video = videoRef.current;
+    if (!video) return;
+
+    const tryPlay = async () => {
+      try {
+        await video.play();
+        setPlaybackBlocked(false);
+      } catch {
+        setPlaybackBlocked(true);
+      }
     };
-  }, [track]);
+
+    void tryPlay();
+  }, [streamUrl, useNativeVideo]);
+
+  const startPlayback = async () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    try {
+      await video.play();
+      setPlaybackBlocked(false);
+      track("video_play_clicked", {
+        currentTimeSeconds: Number(video.currentTime.toFixed(2)),
+      });
+    } catch {
+      track("video_play_error");
+    }
+  };
 
   const toggleFullscreen = async () => {
     const player = playerRef.current;
@@ -105,17 +106,39 @@ export function LiveStreamPlayer({ className }: LiveStreamPlayerProps) {
         ref={playerRef}
         className="relative aspect-video w-full overflow-hidden rounded-2xl border-2 border-gold/30 bg-black shadow-2xl shadow-black/60"
       >
-        <iframe
-          src={streamUrl}
-          title="Champions of Champions live stream"
-          className="absolute inset-0 h-full w-full border-0"
-          scrolling="no"
-          allowFullScreen
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
-          onLoad={() => track("iframe_loaded")}
-          onError={() => track("iframe_error")}
-        />
+        {useNativeVideo ? (
+          <>
+            <video
+              ref={videoRef}
+              src={streamUrl}
+              className="absolute inset-0 h-full w-full border-0 object-cover"
+              controls
+              autoPlay
+              muted
+              loop
+              playsInline
+            />
+            {playbackBlocked && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/70 p-4">
+                <Button type="button" size="sm" onClick={startPlayback}>
+                  Tap to Play Stream
+                </Button>
+              </div>
+            )}
+          </>
+        ) : (
+          <iframe
+            src={streamUrl}
+            title="Champions of Champions live stream"
+            className="absolute inset-0 h-full w-full border-0"
+            scrolling="no"
+            allowFullScreen
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            onLoad={() => track("iframe_loaded")}
+            onError={() => track("iframe_error")}
+          />
+        )}
       </div>
     </div>
   );

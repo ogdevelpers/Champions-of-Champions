@@ -6,6 +6,10 @@ export const LIVE_STREAM_ACTIONS = [
   "stream_unmounted",
   "iframe_loaded",
   "iframe_error",
+  "video_loaded",
+  "video_error",
+  "video_play_clicked",
+  "video_play_error",
   "visible_in_viewport",
   "hidden_from_viewport",
   "tab_visible",
@@ -14,12 +18,28 @@ export const LIVE_STREAM_ACTIONS = [
   "wrapper_fullscreen_exit",
   "wrapper_fullscreen_error",
   "player_message",
+  "stream_play",
+  "stream_playing",
+  "stream_pause",
+  "stream_seeked",
+  "stream_ended",
+  "stream_buffering",
+  "stream_volume_change",
+  "watch_heartbeat",
+  "watch_session_end",
 ] as const;
 
 export type LiveStreamAction = (typeof LIVE_STREAM_ACTIONS)[number];
 
+export const TEST_LIVE_STREAM_VIDEO_URL =
+  "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4";
+
 export function getLiveStreamUrl(): string {
   return process.env.NEXT_PUBLIC_LIVE_STREAM_URL ?? DEFAULT_LIVE_STREAM_URL;
+}
+
+export function isDirectVideoStream(streamUrl: string): boolean {
+  return /\.(mp4|webm|ogg)(\?.*)?$/i.test(streamUrl);
 }
 
 export function parseStreamEventId(streamUrl: string): string {
