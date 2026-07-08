@@ -7,11 +7,12 @@ import { getLiveStreamUrl, isDirectVideoStream } from "@/lib/live-stream";
 import { cn } from "@/lib/utils";
 
 interface LiveStreamPlayerProps {
+  employeeId: string;
   className?: string;
 }
 
-export function LiveStreamPlayer({ className }: LiveStreamPlayerProps) {
-  const streamUrl = getLiveStreamUrl();
+export function LiveStreamPlayer({ employeeId, className }: LiveStreamPlayerProps) {
+  const streamUrl = getLiveStreamUrl(employeeId);
   const useNativeVideo = isDirectVideoStream(streamUrl);
   const playerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -22,6 +23,7 @@ export function LiveStreamPlayer({ className }: LiveStreamPlayerProps) {
     playerRef,
     videoRef,
     useNativeVideo,
+    employeeId,
   });
 
   useEffect(() => {

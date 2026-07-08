@@ -10,6 +10,7 @@ interface UseLiveStreamTrackingOptions {
   playerRef: RefObject<HTMLDivElement | null>;
   videoRef: RefObject<HTMLVideoElement | null>;
   useNativeVideo: boolean;
+  employeeId: string;
 }
 
 interface WatchTrackerState {
@@ -40,6 +41,7 @@ export function useLiveStreamTracking({
   playerRef,
   videoRef,
   useNativeVideo,
+  employeeId,
 }: UseLiveStreamTrackingOptions) {
   const watchStateRef = useRef<WatchTrackerState>({
     watchDurationSeconds: 0,
@@ -50,8 +52,8 @@ export function useLiveStreamTracking({
   });
 
   const track = useCallback((action: string, metadata: Record<string, unknown> = {}) => {
-    void logLiveStreamEvent(action, metadata);
-  }, []);
+    void logLiveStreamEvent(action, metadata, employeeId);
+  }, [employeeId]);
 
   const tickWatchDuration = useCallback(() => {
     const state = watchStateRef.current;

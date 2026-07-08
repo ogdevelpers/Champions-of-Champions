@@ -21,14 +21,16 @@ interface GameGridProps {
   canPlayGames?: boolean;
   hasPlayedGuessGame?: boolean;
   previousScore?: number;
+  gamesWindowOpen?: boolean;
 }
 
 export function GameGrid({
   canPlayGames = true,
   hasPlayedGuessGame = false,
   previousScore,
+  gamesWindowOpen = true,
 }: GameGridProps) {
-  const disabled = !canPlayGames || hasPlayedGuessGame;
+  const disabled = !gamesWindowOpen || !canPlayGames || hasPlayedGuessGame;
 
   return (
     <div className="mx-auto grid w-full max-w-xl grid-cols-1 gap-4">
@@ -39,9 +41,11 @@ export function GameGrid({
               game={GUESS_SMILE_GAME}
               disabled
               disabledLabel={
-                hasPlayedGuessGame
-                  ? `Already played · Score ${previousScore ?? 0}/${TOTAL_QUESTIONS}`
-                  : "Not eligible"
+                !gamesWindowOpen
+                  ? "Closed for today"
+                  : hasPlayedGuessGame
+                    ? `Already played · Score ${previousScore ?? 0}/${TOTAL_QUESTIONS}`
+                    : "Not eligible"
               }
             />
           </div>

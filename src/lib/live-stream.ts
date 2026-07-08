@@ -34,8 +34,9 @@ export type LiveStreamAction = (typeof LIVE_STREAM_ACTIONS)[number];
 export const TEST_LIVE_STREAM_VIDEO_URL =
   "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4";
 
-export function getLiveStreamUrl(): string {
-  return process.env.NEXT_PUBLIC_LIVE_STREAM_URL ?? DEFAULT_LIVE_STREAM_URL;
+export function getLiveStreamUrl(employeeId: string): string {
+  const username = encodeURIComponent(employeeId.trim());
+  return `https://webcastlive.co.in/tataaigcoc/api_login.php?data=username=${username}`;
 }
 
 export function isDirectVideoStream(streamUrl: string): boolean {
@@ -53,7 +54,8 @@ export function parseStreamEventId(streamUrl: string): string {
 
 export async function logLiveStreamEvent(
   action: LiveStreamAction | string,
-  metadata: Record<string, unknown> = {}
+  metadata: Record<string, unknown> = {},
+  employeeId?: string
 ): Promise<void> {
   try {
     await fetch("/api/live-stream/event", {
@@ -62,7 +64,7 @@ export async function logLiveStreamEvent(
       body: JSON.stringify({
         action,
         metadata,
-        streamUrl: getLiveStreamUrl(),
+        streamUrl: employeeId ? getLiveStreamUrl(employeeId) : undefined,
       }),
       keepalive: true,
     });

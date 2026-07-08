@@ -24,7 +24,9 @@ export async function POST(request: NextRequest) {
     }
 
     const resolvedStreamUrl =
-      typeof streamUrl === "string" && streamUrl.trim() ? streamUrl : getLiveStreamUrl();
+      typeof streamUrl === "string" && streamUrl.trim()
+        ? streamUrl
+        : getLiveStreamUrl(session.employeeId);
     const streamEventId = parseStreamEventId(resolvedStreamUrl);
 
     const supabase = await createServiceClient();
