@@ -20,20 +20,50 @@ export function DubsmashGame() {
   const [cameraError, setCameraError] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
-  const playbackRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const recordedUrlRef = useRef<string | null>(null);
   const autoStopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const revokeRecordedUrl = () => {
+    if (recordedUrlRef.current) {
+      URL.revokeObjectURL(recordedUrlRef.current);
+      recordedUrlRef.current = null;
+    }
+  };
 
   useEffect(() => {
     return () => {
       if (autoStopTimeoutRef.current) clearTimeout(autoStopTimeoutRef.current);
       if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
       streamRef.current?.getTracks().forEach((t) => t.stop());
-      if (recordedUrl) URL.revokeObjectURL(recordedUrl);
+      revokeRecordedUrl();
     };
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (recordedUrl) {
+      video.srcObject = null;
+      video.src = recordedUrl;
+      video.muted = false;
+      video.load();
+      void video.play().catch(() => {
+        // Autoplay may be blocked; controls remain available for manual playback.
+      });
+      return;
+    }
+
+    video.src = "";
+    video.muted = true;
+    if (streamRef.current) {
+      video.srcObject = streamRef.current;
+      void video.play().catch(() => {});
+    }
   }, [recordedUrl]);
 
   const stopRecording = () => {
@@ -42,9 +72,20 @@ export function DubsmashGame() {
       autoStopTimeoutRef.current = null;
     }
     if (recorderRef.current?.state === "recording") {
+      recorderRef.current.requestData();
       recorderRef.current.stop();
     }
     setRecording(false);
+  };
+
+  const getSupportedMimeType = () => {
+    const types = [
+      "video/webm;codecs=vp9,opus",
+      "video/webm;codecs=vp8,opus",
+      "video/webm",
+      "video/mp4",
+    ];
+    return types.find((type) => MediaRecorder.isTypeSupported(type)) ?? "";
   };
 
   const startCamera = async () => {
@@ -56,7 +97,10 @@ export function DubsmashGame() {
       });
       streamRef.current = stream;
       if (videoRef.current) {
+        videoRef.current.src = "";
         videoRef.current.srcObject = stream;
+        videoRef.current.muted = true;
+        void videoRef.current.play().catch(() => {});
       }
     } catch {
       setCameraError("Camera access denied. Please allow camera and microphone permissions.");
@@ -65,6 +109,7 @@ export function DubsmashGame() {
 
   const selectClip = async (clip: DubsmashClip) => {
     setSelectedClip(clip);
+    revokeRecordedUrl();
     setRecordedBlob(null);
     setRecordedUrl(null);
     setSaved(false);
@@ -75,9 +120,11 @@ export function DubsmashGame() {
     if (!streamRef.current) return;
 
     chunksRef.current = [];
-    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
-      ? "video/webm;codecs=vp9,opus"
-      : "video/webm";
+    const mimeType = getSupportedMimeType();
+    if (!mimeType) {
+      setCameraError("Video recording is not supported in this browser.");
+      return;
+    }
 
     const recorder = new MediaRecorder(streamRef.current, { mimeType });
     recorderRef.current = recorder;
@@ -88,10 +135,19 @@ export function DubsmashGame() {
 
     recorder.onstop = () => {
       const blob = new Blob(chunksRef.current, { type: mimeType });
-      setRecordedBlob(blob);
+      if (blob.size === 0) {
+        setCameraError("Recording failed. Please try again.");
+        startCamera();
+        return;
+      }
+
+      revokeRecordedUrl();
       const url = URL.createObjectURL(blob);
+      recordedUrlRef.current = url;
+      setRecordedBlob(blob);
       setRecordedUrl(url);
       streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
     };
 
     setCountdown(3);
@@ -105,7 +161,7 @@ export function DubsmashGame() {
         countdownIntervalRef.current = null;
         setCountdown(null);
         setRecording(true);
-        recorder.start();
+        recorder.start(250);
 
         autoStopTimeoutRef.current = setTimeout(() => {
           stopRecording();
@@ -114,10 +170,12 @@ export function DubsmashGame() {
     }, 1000);
   };
 
-  const handleSave = async () => {
+  const handleUploadAndDownload = async () => {
     if (!recordedBlob || !selectedClip) return;
     setSaving(true);
     try {
+      downloadBlob(recordedBlob, `dubsmash-${selectedClip.id}.webm`);
+
       const formData = new FormData();
       formData.append("clipId", selectedClip.id);
       formData.append("video", recordedBlob, "dubsmash.webm");
@@ -129,10 +187,13 @@ export function DubsmashGame() {
     }
   };
 
-  const handleDownload = () => {
-    if (recordedBlob) {
-      downloadBlob(recordedBlob, `dubsmash-${selectedClip?.id || "video"}.webm`);
-    }
+  const handleRetake = () => {
+    revokeRecordedUrl();
+    setRecordedBlob(null);
+    setRecordedUrl(null);
+    setSaved(false);
+    setCameraError(null);
+    startCamera();
   };
 
   if (!selectedClip) {
@@ -192,11 +253,14 @@ export function DubsmashGame() {
       )}
 
       <div className="relative mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-2xl border-2 border-gold/30 bg-black shadow-2xl shadow-black/50">
-        {recordedUrl ? (
-          <video ref={playbackRef} src={recordedUrl} controls className="h-full w-full object-cover" />
-        ) : (
-          <video ref={videoRef} autoPlay muted playsInline className="h-full w-full scale-x-[-1] object-cover" />
-        )}
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          controls={!!recordedUrl}
+          muted={!recordedUrl}
+          className={`h-full w-full object-cover ${recordedUrl ? "" : "scale-x-[-1]"}`}
+        />
 
         {countdown !== null && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm">
@@ -241,31 +305,19 @@ export function DubsmashGame() {
         {recordedUrl && (
           <>
             <Button
-              onClick={handleDownload}
+              onClick={handleUploadAndDownload}
               variant="primary"
-              className={gameActionButtonClass}
-            >
-              Download Video
-            </Button>
-            <Button
-              onClick={handleSave}
-              variant="secondary"
               disabled={saving || saved}
               className={gameActionButtonClass}
             >
-              {saved ? "Saved ✓" : saving ? "Saving..." : "Save to Gallery"}
+              {saved ? "Uploaded ✓" : saving ? "Uploading..." : "Upload & Download Video"}
             </Button>
             <Button
               variant="secondary"
               className={gameActionButtonClass}
-              onClick={() => {
-                setRecordedBlob(null);
-                setRecordedUrl(null);
-                setSaved(false);
-                startCamera();
-              }}
+              onClick={handleRetake}
             >
-              Re-record
+              Retake
             </Button>
           </>
         )}

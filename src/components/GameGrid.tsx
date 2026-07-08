@@ -8,15 +8,6 @@ import { cn } from "@/lib/utils";
 
 const GAMES = [
   {
-    id: "retro-poster",
-    title: "Retro Posters",
-    description: "Take a selfie and star in classic Bollywood posters with AI face mapping.",
-    emoji: "🎞️",
-    href: "/games/retro-poster",
-    tag: "Create & Download",
-    accent: "from-amber-500/20 to-orange-600/10",
-  },
-  {
     id: "guess-actor",
     title: "Guess The Star",
     description: "Identify Bollywood actors from their smiles before time runs out!",

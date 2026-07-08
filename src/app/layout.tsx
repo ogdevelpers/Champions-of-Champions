@@ -9,7 +9,7 @@ const geist = Geist({
 
 export const metadata: Metadata = {
   title: "Champions of Champions | Employee Engagement",
-  description: "Play retro poster, guess the star, memory match, and dubsmash games",
+  description: "Play guess the star, memory match, and dubsmash games",
 };
 
 export default function RootLayout({

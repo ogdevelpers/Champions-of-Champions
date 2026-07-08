@@ -95,6 +95,7 @@ export function MemoryGame() {
   const [completed, setCompleted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const lockRef = useRef(false);
 
@@ -104,6 +105,7 @@ export function MemoryGame() {
     setMatched([]);
     setActions(0);
     setCompleted(false);
+    setScoreSubmitted(false);
     setElapsed(0);
     setStarted(true);
   }, []);
@@ -116,18 +118,20 @@ export function MemoryGame() {
     };
   }, [started, completed]);
 
-  const saveResults = async (finalActions: number, finalTime: number) => {
+  const handleSubmitScore = async () => {
+    if (scoreSubmitted || saving) return;
     setSaving(true);
     try {
-      await fetch("/api/games/memory", {
+      const res = await fetch("/api/games/memory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          actions: finalActions,
-          timeTakenSeconds: finalTime,
+          actions,
+          timeTakenSeconds: elapsed,
           completed: true,
         }),
       });
+      if (res.ok) setScoreSubmitted(true);
     } finally {
       setSaving(false);
     }
@@ -158,7 +162,6 @@ export function MemoryGame() {
         if (newMatched.length === TOTAL_PAIRS) {
           setCompleted(true);
           if (timerRef.current) clearInterval(timerRef.current);
-          saveResults(actions + 1, elapsed);
         }
       } else {
         setTimeout(() => {
@@ -189,18 +192,25 @@ export function MemoryGame() {
           emoji="🎉"
           title="Congratulations!"
           footer={
-            <Button onClick={initGame} variant="secondary" size="lg">
-              Play Again
-            </Button>
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <Button
+                onClick={handleSubmitScore}
+                variant="primary"
+                size="lg"
+                disabled={saving || scoreSubmitted}
+              >
+                {scoreSubmitted ? "Submitted ✓" : saving ? "Submitting..." : "Submit Score"}
+              </Button>
+              <Button onClick={initGame} variant="secondary" size="lg">
+                Play Again
+              </Button>
+            </div>
           }
         >
           <div className="grid grid-cols-2 gap-4">
             <StatBox label="Actions" value={actions} />
             <StatBox label="Time" value={formatTime(elapsed)} />
           </div>
-          {saving && (
-            <p className="mt-4 text-sm text-cream/40 animate-pulse">Saving results...</p>
-          )}
         </GameResultCard>
       </CenteredScreen>
     );
