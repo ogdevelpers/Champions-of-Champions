@@ -5,57 +5,52 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Stagger } from "@/components/ui/Animated";
 import { cn } from "@/lib/utils";
+import { TOTAL_QUESTIONS } from "@/lib/game-data/actors";
 
-const GAMES = [
-  {
-    id: "guess-actor",
-    title: "Guess The Star",
-    description: "24 smile close-ups, 30 seconds, 4 options each — how many stars can you name?",
-    emoji: "⭐",
-    href: "/games/guess-actor",
-    tag: "Timed Challenge",
-    accent: "from-yellow-500/20 to-amber-600/10",
-  },
-  {
-    id: "memory",
-    title: "Memory Match",
-    description: "Flip tiles, find matching pairs — fewer moves and faster time wins!",
-    emoji: "🧩",
-    href: "/games/memory",
-    tag: "Memory Game",
-    accent: "from-emerald-500/20 to-teal-600/10",
-  },
-  {
-    id: "dubsmash",
-    title: "Dubsmash",
-    description: "Enact iconic Bollywood dialogues and save your blockbuster moment!",
-    emoji: "🎤",
-    href: "/games/dubsmash",
-    tag: "Record & Share",
-    accent: "from-purple-500/20 to-pink-600/10",
-  },
-];
+const GUESS_SMILE_GAME = {
+  id: "guess-actor",
+  title: "Guess the Smile",
+  description: "24 smile close-ups, 30 seconds, 4 options each — how many stars can you name?",
+  emoji: "😁",
+  href: "/games/guess-actor",
+  tag: "One Attempt",
+  accent: "from-yellow-500/20 to-amber-600/10",
+};
 
 interface GameGridProps {
   canPlayGames?: boolean;
+  hasPlayedGuessGame?: boolean;
+  previousScore?: number;
 }
 
-export function GameGrid({ canPlayGames = true }: GameGridProps) {
+export function GameGrid({
+  canPlayGames = true,
+  hasPlayedGuessGame = false,
+  previousScore,
+}: GameGridProps) {
+  const disabled = !canPlayGames || hasPlayedGuessGame;
+
   return (
-    <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
-      {GAMES.map((game, i) => (
-        <Stagger key={game.id} index={i + 1} className="h-full w-full">
-          {canPlayGames ? (
-            <Link href={game.href} className="block h-full w-full cursor-pointer">
-              <GameCard game={game} />
-            </Link>
-          ) : (
-            <div className="block h-full w-full cursor-not-allowed" aria-disabled="true">
-              <GameCard game={game} disabled />
-            </div>
-          )}
-        </Stagger>
-      ))}
+    <div className="mx-auto grid w-full max-w-xl grid-cols-1 gap-4">
+      <Stagger index={1} className="h-full w-full">
+        {disabled ? (
+          <div className="block h-full w-full cursor-not-allowed" aria-disabled="true">
+            <GameCard
+              game={GUESS_SMILE_GAME}
+              disabled
+              disabledLabel={
+                hasPlayedGuessGame
+                  ? `Already played · Score ${previousScore ?? 0}/${TOTAL_QUESTIONS}`
+                  : "Not eligible"
+              }
+            />
+          </div>
+        ) : (
+          <Link href={GUESS_SMILE_GAME.href} className="block h-full w-full cursor-pointer">
+            <GameCard game={GUESS_SMILE_GAME} />
+          </Link>
+        )}
+      </Stagger>
     </div>
   );
 }
@@ -63,9 +58,11 @@ export function GameGrid({ canPlayGames = true }: GameGridProps) {
 function GameCard({
   game,
   disabled = false,
+  disabledLabel = "Not eligible",
 }: {
-  game: (typeof GAMES)[number];
+  game: typeof GUESS_SMILE_GAME;
   disabled?: boolean;
+  disabledLabel?: string;
 }) {
   return (
     <Card
@@ -88,7 +85,7 @@ function GameCard({
             </h3>
             <p className="text-body mt-2 text-sm leading-relaxed">{game.description}</p>
             <p className="mt-4 text-sm font-bold text-gold-light transition-all duration-300 group-hover:translate-x-0.5">
-              {disabled ? "Not eligible" : "Play Now →"}
+              {disabled ? disabledLabel : "Play Now →"}
             </p>
           </div>
         </div>

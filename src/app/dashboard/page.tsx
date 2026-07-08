@@ -3,9 +3,9 @@ import { redirect } from "next/navigation";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { AppHeader } from "@/components/AppHeader";
 import { GameGrid } from "@/components/GameGrid";
-import { LiveStreamPlayer } from "@/components/LiveStreamPlayer";
 import { PageShell } from "@/components/PageShell";
 import { FadeIn } from "@/components/ui/Animated";
+import { getGuessActorSubmission } from "@/lib/games/guess-actor-status";
 
 export const runtime = "edge";
 
@@ -19,12 +19,16 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   const params = await searchParams;
   const showIneligibleMessage = params.ineligible === "1" || !session.canPlayGames;
+  const previousSubmission = session.canPlayGames
+    ? await getGuessActorSubmission(session.employeeId)
+    : null;
+  const hasPlayedGuessGame = !!previousSubmission;
 
   return (
     <PageShell overlay={false}>
       <AppHeader
-        title="Live Event & Games"
-        subtitle="Watch the stream and play Bollywood games"
+        title="Guess the Smile"
+        subtitle="Identify Bollywood stars from their smiles"
         showLogout
       />
 
@@ -40,28 +44,22 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
         <FadeIn delay={100}>
           <DashboardSection
-            id="live-stream"
-            title="Live Event Stream"
-            description="Watch the Champions of Champions event live. Fullscreen is available for a better viewing experience."
-            variant="stream"
-            contentClassName="flex justify-center"
-          >
-            <LiveStreamPlayer className="w-full" />
-          </DashboardSection>
-        </FadeIn>
-
-        <FadeIn delay={200}>
-          <DashboardSection
             id="games"
             title="Play & Compete"
             description={
-              session.canPlayGames
-                ? "Choose a game below. Complete challenges, save your creations, and climb the leaderboard."
-                : "Games will unlock here once your account is marked eligible to play."
+              hasPlayedGuessGame
+                ? "You have already completed Guess the Smile. Thank you for playing!"
+                : session.canPlayGames
+                  ? "Tap below to start Guess the Smile. You get one attempt — make it count!"
+                  : "The game will unlock here once your account is marked eligible to play."
             }
             variant="elevated"
           >
-            <GameGrid canPlayGames={session.canPlayGames} />
+            <GameGrid
+              canPlayGames={session.canPlayGames}
+              hasPlayedGuessGame={hasPlayedGuessGame}
+              previousScore={previousSubmission?.score}
+            />
           </DashboardSection>
         </FadeIn>
 

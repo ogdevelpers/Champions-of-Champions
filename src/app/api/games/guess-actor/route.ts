@@ -26,6 +26,21 @@ export async function POST(request: NextRequest) {
     const isWinner = verifiedScore === TOTAL_QUESTIONS;
 
     const supabase = await createServiceClient();
+
+    const { data: existingSubmission } = await supabase
+      .from("guess_actor_submissions")
+      .select("id")
+      .eq("employee_id", session.employeeId)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingSubmission) {
+      return NextResponse.json(
+        { error: "You have already submitted your score for this game." },
+        { status: 409 }
+      );
+    }
+
     const { error } = await supabase.from("guess_actor_submissions").insert({
       employee_id: session.employeeId,
       answers: results,

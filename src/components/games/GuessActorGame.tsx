@@ -10,9 +10,16 @@ import {
   getOptionsForQuestion,
 } from "@/lib/game-data/actors";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { GameStartCard, GameResultCard } from "@/components/ui/GameScreen";
 import { formatTime } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+
+interface GuessActorGameProps {
+  hasPlayed?: boolean;
+  previousScore?: number;
+}
 
 function CenteredScreen({ children }: { children: React.ReactNode }) {
   return (
@@ -22,7 +29,7 @@ function CenteredScreen({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function GuessActorGame() {
+export function GuessActorGame({ hasPlayed = false, previousScore }: GuessActorGameProps) {
   const [round, setRound] = useState<ActorQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -75,7 +82,9 @@ export function GuessActorGame() {
           results,
         }),
       });
-      if (res.ok) setScoreSubmitted(true);
+      if (res.ok) {
+        setScoreSubmitted(true);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -160,14 +169,39 @@ export function GuessActorGame() {
     }, 250);
   };
 
+  if (hasPlayed) {
+    return (
+      <CenteredScreen>
+        <Card glow className="mx-auto max-w-lg text-center">
+          <div className="mb-4 text-6xl">✅</div>
+          <h2 className="font-display text-2xl font-bold gold-gradient-text">Already Played</h2>
+          <p className="text-body mt-4 leading-relaxed">
+            You have already completed Guess the Smile. Each participant gets one attempt only.
+          </p>
+          {typeof previousScore === "number" && (
+            <p className="mt-6 text-4xl font-bold tabular-nums text-cream">
+              {previousScore}{" "}
+              <span className="text-xl text-cream/40">/ {TOTAL_QUESTIONS}</span>
+            </p>
+          )}
+          <Link href="/dashboard" className="mt-8 inline-block">
+            <Button variant="secondary" size="lg">
+              Back to Dashboard
+            </Button>
+          </Link>
+        </Card>
+      </CenteredScreen>
+    );
+  }
+
   if (!started) {
     return (
       <CenteredScreen>
         <GameStartCard
-          emoji="🎬"
-          title="Guess The Star"
-          subtitle="Smile Edition"
-          description={`Identify Bollywood stars from their smiles. You get ${GUESS_TIME_SECONDS} seconds for ${TOTAL_QUESTIONS} images — pick the right name from 4 options. Every play shuffles the order!`}
+          emoji="😁"
+          title="Guess the Smile"
+          subtitle="One attempt only"
+          description={`Identify Bollywood stars from their smiles. You get ${GUESS_TIME_SECONDS} seconds for ${TOTAL_QUESTIONS} images — pick the right name from 4 options.`}
           onStart={startGame}
         />
       </CenteredScreen>
@@ -182,19 +216,22 @@ export function GuessActorGame() {
           emoji={isWinner ? "🏆" : "⭐"}
           title={isWinner ? "Perfect Score!" : "Time's Up!"}
           footer={
-            <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+            scoreSubmitted ? (
+              <Link href="/dashboard">
+                <Button variant="secondary" size="lg">
+                  Back to Dashboard
+                </Button>
+              </Link>
+            ) : (
               <Button
                 onClick={handleSubmitScore}
                 variant="primary"
                 size="lg"
-                disabled={submitting || scoreSubmitted}
+                disabled={submitting}
               >
-                {scoreSubmitted ? "Submitted ✓" : submitting ? "Submitting..." : "Submit Score"}
+                {submitting ? "Submitting..." : "Submit Score"}
               </Button>
-              <Button onClick={startGame} variant="secondary" size="lg">
-                Play Again
-              </Button>
-            </div>
+            )
           }
         >
           <p className="text-5xl font-bold tabular-nums text-cream">
@@ -203,6 +240,9 @@ export function GuessActorGame() {
           <p className="mt-3 text-cream/60">
             Answered {results.length} of {TOTAL_QUESTIONS} smiles
           </p>
+          {scoreSubmitted && (
+            <p className="mt-4 text-sm text-gold">Score submitted successfully!</p>
+          )}
         </GameResultCard>
       </CenteredScreen>
     );
