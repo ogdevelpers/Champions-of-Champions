@@ -10,7 +10,7 @@ const GAMES = [
   {
     id: "guess-actor",
     title: "Guess The Star",
-    description: "Identify Bollywood actors from their smiles before time runs out!",
+    description: "24 smile close-ups, 30 seconds, 4 options each — how many stars can you name?",
     emoji: "⭐",
     href: "/games/guess-actor",
     tag: "Timed Challenge",

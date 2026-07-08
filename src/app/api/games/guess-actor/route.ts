@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { requirePlayableSession } from "@/lib/require-playable-session";
 import { createServiceClient } from "@/lib/supabase/server";
-import { ACTOR_QUESTIONS, calculateScore } from "@/lib/game-data/actors";
+import { TOTAL_QUESTIONS, calculateScore, type GuessResult } from "@/lib/game-data/actors";
 
 export const runtime = "edge";
 
@@ -11,21 +11,25 @@ export async function POST(request: NextRequest) {
   if (response) return response;
 
   try {
-    const { answers, timeTakenSeconds } = await request.json();
+    const { score, totalQuestions, timeTakenSeconds, results } = await request.json();
 
-    if (!answers || typeof timeTakenSeconds !== "number") {
+    if (
+      typeof score !== "number" ||
+      typeof totalQuestions !== "number" ||
+      typeof timeTakenSeconds !== "number" ||
+      !Array.isArray(results)
+    ) {
       return NextResponse.json({ error: "Invalid submission data" }, { status: 400 });
     }
 
-    const score = calculateScore(answers);
-    const totalQuestions = ACTOR_QUESTIONS.length;
-    const isWinner = score === totalQuestions;
+    const verifiedScore = calculateScore(results as GuessResult[]);
+    const isWinner = verifiedScore === TOTAL_QUESTIONS;
 
     const supabase = await createServiceClient();
     const { error } = await supabase.from("guess_actor_submissions").insert({
       employee_id: session.employeeId,
-      answers,
-      score,
+      answers: results,
+      score: verifiedScore,
       total_questions: totalQuestions,
       time_taken_seconds: timeTakenSeconds,
       is_winner: isWinner,
@@ -37,7 +41,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: message, hint: "Run supabase/game-tables.sql in Supabase SQL Editor" }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, score, totalQuestions, isWinner });
+    return NextResponse.json({ success: true, score: verifiedScore, totalQuestions, isWinner });
   } catch {
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }

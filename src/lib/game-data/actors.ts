@@ -1,93 +1,67 @@
 export interface ActorQuestion {
-  id: number;
+  id: string;
+  name: string;
   imageUrl: string;
-  /** CSS object-position to frame the smile crop per photo */
-  imagePosition: string;
-  correctAnswer: string;
-  aliases: string[];
 }
 
-export const GUESS_TIME_SECONDS = 180;
+export interface GuessResult {
+  actorId: string;
+  selected: string;
+  correct: boolean;
+}
+
+export const GUESS_TIME_SECONDS = 30;
+export const TOTAL_QUESTIONS = 24;
+export const OPTIONS_PER_QUESTION = 4;
 
 export const ACTOR_QUESTIONS: ActorQuestion[] = [
-  {
-    id: 1,
-    imageUrl: "/games/actors/actor-1.jpg",
-    imagePosition: "center 72%",
-    correctAnswer: "Amitabh Bachchan",
-    aliases: ["amitabh", "amitabh bachchan", "big b", "bachchan"],
-  },
-  {
-    id: 2,
-    imageUrl: "/games/actors/actor-2.jpg",
-    imagePosition: "center 68%",
-    correctAnswer: "Shah Rukh Khan",
-    aliases: ["shah rukh khan", "srk", "shahrukh khan", "shahrukh"],
-  },
-  {
-    id: 3,
-    imageUrl: "/games/actors/actor-3.jpg",
-    imagePosition: "center 75%",
-    correctAnswer: "Dharmendra",
-    aliases: ["dharmendra", "dharamendra"],
-  },
-  {
-    id: 4,
-    imageUrl: "/games/actors/actor-4.jpg",
-    imagePosition: "center 70%",
-    correctAnswer: "Raj Kapoor",
-    aliases: ["raj kapoor", "showman"],
-  },
-  {
-    id: 5,
-    imageUrl: "/games/actors/actor-5.jpg",
-    imagePosition: "center 65%",
-    correctAnswer: "Salman Khan",
-    aliases: ["salman khan", "salman", "bhai"],
-  },
-  {
-    id: 6,
-    imageUrl: "/games/actors/actor-6.jpg",
-    imagePosition: "center 70%",
-    correctAnswer: "Aamir Khan",
-    aliases: ["aamir khan", "aamir", "mr perfectionist"],
-  },
-  {
-    id: 7,
-    imageUrl: "/games/actors/actor-7.jpg",
-    imagePosition: "center 68%",
-    correctAnswer: "Hrithik Roshan",
-    aliases: ["hrithik roshan", "hrithik"],
-  },
-  {
-    id: 8,
-    imageUrl: "/games/actors/actor-8.jpg",
-    imagePosition: "center 72%",
-    correctAnswer: "Ranbir Kapoor",
-    aliases: ["ranbir kapoor", "ranbir"],
-  },
-  {
-    id: 9,
-    imageUrl: "/games/actors/actor-9.jpg",
-    imagePosition: "center 70%",
-    correctAnswer: "Ranveer Singh",
-    aliases: ["ranveer singh", "ranveer"],
-  },
+  { id: "vijay", name: "Vijay", imageUrl: "/games/actors/smiles/vijay.png" },
+  { id: "hema-malini", name: "Hema Malini", imageUrl: "/games/actors/smiles/hema-malini.png" },
+  { id: "sridevi", name: "Sridevi", imageUrl: "/games/actors/smiles/sridevi.png" },
+  { id: "dimple-kapadia", name: "Dimple Kapadia", imageUrl: "/games/actors/smiles/dimple-kapadia.png" },
+  { id: "neetu-singh", name: "Neetu Singh", imageUrl: "/games/actors/smiles/neetu-singh.png" },
+  { id: "rekha", name: "Rekha", imageUrl: "/games/actors/smiles/rekha.png" },
+  { id: "dharmendra", name: "Dharmendra", imageUrl: "/games/actors/smiles/dharmendra.png" },
+  { id: "alia-bhatt", name: "Alia Bhatt", imageUrl: "/games/actors/smiles/alia-bhatt.png" },
+  { id: "kiara-advani", name: "Kiara Advani", imageUrl: "/games/actors/smiles/kiara-advani.png" },
+  { id: "amitabh-bachchan", name: "Amitabh Bachchan", imageUrl: "/games/actors/smiles/amitabh-bachchan.png" },
+  { id: "yash", name: "Yash", imageUrl: "/games/actors/smiles/yash.png" },
+  { id: "prabhas", name: "Prabhas", imageUrl: "/games/actors/smiles/prabhas.png" },
+  { id: "samantha-prabhu", name: "Samantha Prabhu", imageUrl: "/games/actors/smiles/samantha-prabhu.png" },
+  { id: "rajesh-khanna", name: "Rajesh Khanna", imageUrl: "/games/actors/smiles/rajesh-khanna.png" },
+  { id: "rajinikanth", name: "Rajinikanth", imageUrl: "/games/actors/smiles/rajinikanth.png" },
+  { id: "allu-arjun", name: "Allu Arjun", imageUrl: "/games/actors/smiles/allu-arjun.png" },
+  { id: "rashmika-mandanna", name: "Rashmika Mandanna", imageUrl: "/games/actors/smiles/rashmika-mandanna.png" },
+  { id: "mithun-chakraborty", name: "Mithun Chakraborty", imageUrl: "/games/actors/smiles/mithun-chakraborty.png" },
+  { id: "ananya-pandey", name: "Ananya Pandey", imageUrl: "/games/actors/smiles/ananya-pandey.png" },
+  { id: "shah-rukh-khan", name: "Shah Rukh Khan", imageUrl: "/games/actors/smiles/shah-rukh-khan.png" },
+  { id: "ram-charan", name: "Ram Charan", imageUrl: "/games/actors/smiles/ram-charan.png" },
+  { id: "sanjay-dutt", name: "Sanjay Dutt", imageUrl: "/games/actors/smiles/sanjay-dutt.png" },
+  { id: "anil-kapoor", name: "Anil Kapoor", imageUrl: "/games/actors/smiles/anil-kapoor.png" },
+  { id: "salman-khan", name: "Salman Khan", imageUrl: "/games/actors/smiles/salman-khan.png" },
 ];
 
-export function normalizeAnswer(answer: string): string {
-  return answer.trim().toLowerCase().replace(/\s+/g, " ");
+export function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
 
-export function checkAnswer(userAnswer: string, question: ActorQuestion): boolean {
-  const normalized = normalizeAnswer(userAnswer);
-  if (!normalized) return false;
-  const allAnswers = [question.correctAnswer, ...question.aliases].map(normalizeAnswer);
-  return allAnswers.some((a) => a === normalized || normalized.includes(a) || a.includes(normalized));
+export function createShuffledRound(): ActorQuestion[] {
+  return shuffleArray(ACTOR_QUESTIONS);
 }
 
-export function calculateScore(answers: Record<number, string>): number {
-  return ACTOR_QUESTIONS.reduce((score, q) => {
-    return score + (checkAnswer(answers[q.id] || "", q) ? 1 : 0);
-  }, 0);
+export function getOptionsForQuestion(question: ActorQuestion): string[] {
+  const distractors = shuffleArray(
+    ACTOR_QUESTIONS.filter((actor) => actor.id !== question.id).map((actor) => actor.name)
+  ).slice(0, OPTIONS_PER_QUESTION - 1);
+
+  return shuffleArray([question.name, ...distractors]);
+}
+
+export function calculateScore(results: GuessResult[]): number {
+  return results.filter((result) => result.correct).length;
 }
