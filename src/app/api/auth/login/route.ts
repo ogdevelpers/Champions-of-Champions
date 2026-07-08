@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServiceClient } from "@/lib/supabase/server";
+import { isTataAigEmail } from "@/lib/email";
 import {
   SESSION_COOKIE,
-  isValidEmail,
   normalizeEmployeeId,
   sessionCookieOptions,
 } from "@/lib/auth";
@@ -35,8 +35,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
-    if (!email || typeof email !== "string" || !isValidEmail(email)) {
-      return NextResponse.json({ error: "A valid email address is required" }, { status: 400 });
+    if (!email || typeof email !== "string" || !isTataAigEmail(email)) {
+      return NextResponse.json(
+        { error: "Please use your official @tataaig.com email address" },
+        { status: 400 }
+      );
     }
 
     const normalizedId = normalizeEmployeeId(employeeId);

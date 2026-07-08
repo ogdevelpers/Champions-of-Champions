@@ -43,11 +43,7 @@ export function sessionCookieOptions(maxAge = 60 * 60 * 24 * 7) {
   };
 }
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-export function isValidEmail(email: string): boolean {
-  return EMAIL_PATTERN.test(email.trim());
-}
+export { isValidEmail, isTataAigEmail } from "@/lib/email";
 
 export function normalizeEmployeeId(employeeId: string): string {
   return employeeId.trim().toUpperCase();

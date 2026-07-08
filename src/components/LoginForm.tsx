@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { FadeIn } from "@/components/ui/Animated";
+import { isTataAigEmail } from "@/lib/email";
 
 export function LoginForm() {
   const [employeeId, setEmployeeId] = useState("");
@@ -45,7 +46,8 @@ export function LoginForm() {
     }
   };
 
-  const isValid = employeeId.trim() && name.trim() && email.trim();
+  const isValid =
+    employeeId.trim() && name.trim() && email.trim() && isTataAigEmail(email);
 
   return (
     <div className="w-full max-w-md">
@@ -102,10 +104,15 @@ export function LoginForm() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
+                placeholder="you@tataaig.com"
                 required
                 className="mt-2"
               />
+              {email.trim() && !isTataAigEmail(email) && (
+                <p className="mt-2 text-xs text-amber-300">
+                  Email must end with @tataaig.com
+                </p>
+              )}
             </div>
 
             {error && (
