@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { DUBSMASH_CLIPS, DubsmashClip } from "@/lib/game-data/dubsmash-clips";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Stagger } from "@/components/ui/Animated";
 import { downloadBlob } from "@/lib/utils";
+import { createMixedRecordingStream } from "@/lib/dubsmash-recording";
 import { GameActionBar, gameActionButtonClass } from "@/components/ui/GameActionBar";
 
 export function DubsmashGame() {
@@ -18,6 +19,7 @@ export function DubsmashGame() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [previewingAudio, setPreviewingAudio] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -26,6 +28,9 @@ export function DubsmashGame() {
   const recordedUrlRef = useRef<string | null>(null);
   const autoStopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const backgroundAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioCapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mixCleanupRef = useRef<(() => void) | null>(null);
 
   const revokeRecordedUrl = () => {
     if (recordedUrlRef.current) {
@@ -34,14 +39,101 @@ export function DubsmashGame() {
     }
   };
 
+  const stopBackgroundAudio = useCallback(() => {
+    if (audioCapTimeoutRef.current) {
+      clearTimeout(audioCapTimeoutRef.current);
+      audioCapTimeoutRef.current = null;
+    }
+    const audio = backgroundAudioRef.current;
+    if (!audio) return;
+    audio.onended = null;
+    audio.ontimeupdate = null;
+    audio.pause();
+    audio.currentTime = 0;
+    backgroundAudioRef.current = null;
+    setPreviewingAudio(false);
+  }, []);
+
+  const stopMix = useCallback(() => {
+    if (mixCleanupRef.current) {
+      mixCleanupRef.current();
+      mixCleanupRef.current = null;
+    }
+  }, []);
+
+  const clearAutoStop = () => {
+    if (autoStopTimeoutRef.current) {
+      clearTimeout(autoStopTimeoutRef.current);
+      autoStopTimeoutRef.current = null;
+    }
+  };
+
+  const stopRecording = useCallback(() => {
+    clearAutoStop();
+    stopBackgroundAudio();
+    stopMix();
+    if (recorderRef.current?.state === "recording") {
+      recorderRef.current.requestData();
+      recorderRef.current.stop();
+    }
+    setRecording(false);
+  }, [stopBackgroundAudio, stopMix]);
+
+  const playBackgroundAudio = useCallback(
+    (clip: DubsmashClip, onEnded?: () => void) => {
+      stopBackgroundAudio();
+
+      const audio = new Audio(clip.audioUrl);
+      backgroundAudioRef.current = audio;
+      let finished = false;
+
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        if (audioCapTimeoutRef.current) {
+          clearTimeout(audioCapTimeoutRef.current);
+          audioCapTimeoutRef.current = null;
+        }
+        audio.onended = null;
+        audio.ontimeupdate = null;
+        audio.pause();
+        setPreviewingAudio(false);
+        onEnded?.();
+      };
+
+      audio.onended = finish;
+      audio.ontimeupdate = () => {
+        if (audio.currentTime >= clip.duration) finish();
+      };
+      audio.onerror = () => {
+        setPreviewingAudio(false);
+        setCameraError("Could not load the dialogue audio. Please try another clip.");
+      };
+
+      audioCapTimeoutRef.current = setTimeout(finish, clip.duration * 1000);
+
+      void audio.play().then(() => setPreviewingAudio(true)).catch(() => {
+        finished = true;
+        setPreviewingAudio(false);
+        setCameraError("Tap Start Recording to play the dialogue audio.");
+      });
+
+      return audio;
+    },
+    [stopBackgroundAudio]
+  );
+
   useEffect(() => {
     return () => {
       if (autoStopTimeoutRef.current) clearTimeout(autoStopTimeoutRef.current);
+      if (audioCapTimeoutRef.current) clearTimeout(audioCapTimeoutRef.current);
       if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
       streamRef.current?.getTracks().forEach((t) => t.stop());
+      stopBackgroundAudio();
+      stopMix();
       revokeRecordedUrl();
     };
-  }, []);
+  }, [stopBackgroundAudio, stopMix]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -52,9 +144,7 @@ export function DubsmashGame() {
       video.src = recordedUrl;
       video.muted = false;
       video.load();
-      void video.play().catch(() => {
-        // Autoplay may be blocked; controls remain available for manual playback.
-      });
+      void video.play().catch(() => {});
       return;
     }
 
@@ -65,18 +155,6 @@ export function DubsmashGame() {
       void video.play().catch(() => {});
     }
   }, [recordedUrl]);
-
-  const stopRecording = () => {
-    if (autoStopTimeoutRef.current) {
-      clearTimeout(autoStopTimeoutRef.current);
-      autoStopTimeoutRef.current = null;
-    }
-    if (recorderRef.current?.state === "recording") {
-      recorderRef.current.requestData();
-      recorderRef.current.stop();
-    }
-    setRecording(false);
-  };
 
   const getSupportedMimeType = () => {
     const types = [
@@ -108,6 +186,7 @@ export function DubsmashGame() {
   };
 
   const selectClip = async (clip: DubsmashClip) => {
+    stopBackgroundAudio();
     setSelectedClip(clip);
     revokeRecordedUrl();
     setRecordedBlob(null);
@@ -116,9 +195,19 @@ export function DubsmashGame() {
     await startCamera();
   };
 
-  const startRecording = () => {
-    if (!streamRef.current) return;
+  const handlePreviewAudio = () => {
+    if (!selectedClip || recording || countdown !== null) return;
+    if (previewingAudio) {
+      stopBackgroundAudio();
+      return;
+    }
+    playBackgroundAudio(selectedClip);
+  };
 
+  const startRecording = () => {
+    if (!streamRef.current || !selectedClip) return;
+
+    const cameraStream = streamRef.current;
     chunksRef.current = [];
     const mimeType = getSupportedMimeType();
     if (!mimeType) {
@@ -126,47 +215,76 @@ export function DubsmashGame() {
       return;
     }
 
-    const recorder = new MediaRecorder(streamRef.current, { mimeType });
-    recorderRef.current = recorder;
-
-    recorder.ondataavailable = (e) => {
-      if (e.data.size > 0) chunksRef.current.push(e.data);
-    };
-
-    recorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: mimeType });
-      if (blob.size === 0) {
-        setCameraError("Recording failed. Please try again.");
-        startCamera();
-        return;
-      }
-
-      revokeRecordedUrl();
-      const url = URL.createObjectURL(blob);
-      recordedUrlRef.current = url;
-      setRecordedBlob(blob);
-      setRecordedUrl(url);
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-    };
-
     setCountdown(3);
     let count = 3;
     countdownIntervalRef.current = setInterval(() => {
       count -= 1;
       if (count > 0) {
         setCountdown(count);
-      } else {
-        if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-        countdownIntervalRef.current = null;
-        setCountdown(null);
-        setRecording(true);
-        recorder.start(250);
-
-        autoStopTimeoutRef.current = setTimeout(() => {
-          stopRecording();
-        }, (selectedClip?.duration || 8) * 1000);
+        return;
       }
+
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+      setCountdown(null);
+
+      void (async () => {
+        try {
+          const { stream: mixedStream, dialogueAudio, cleanup } =
+            await createMixedRecordingStream(cameraStream, selectedClip.audioUrl);
+
+          mixCleanupRef.current = cleanup;
+
+          const recorder = new MediaRecorder(mixedStream, { mimeType });
+          recorderRef.current = recorder;
+
+          recorder.ondataavailable = (e) => {
+            if (e.data.size > 0) chunksRef.current.push(e.data);
+          };
+
+          recorder.onstop = () => {
+            stopMix();
+            const blob = new Blob(chunksRef.current, { type: mimeType });
+            if (blob.size === 0) {
+              setCameraError("Recording failed. Please try again.");
+              void startCamera();
+              return;
+            }
+
+            revokeRecordedUrl();
+            const url = URL.createObjectURL(blob);
+            recordedUrlRef.current = url;
+            setRecordedBlob(blob);
+            setRecordedUrl(url);
+            cameraStream.getTracks().forEach((t) => t.stop());
+            streamRef.current = null;
+          };
+
+          let finished = false;
+          const finishRecording = () => {
+            if (finished) return;
+            finished = true;
+            stopRecording();
+          };
+
+          dialogueAudio.onended = finishRecording;
+          dialogueAudio.ontimeupdate = () => {
+            if (dialogueAudio.currentTime >= selectedClip.duration) finishRecording();
+          };
+          autoStopTimeoutRef.current = setTimeout(
+            finishRecording,
+            selectedClip.duration * 1000
+          );
+
+          setRecording(true);
+          recorder.start(250);
+          setPreviewingAudio(true);
+          await dialogueAudio.play();
+        } catch {
+          setCameraError("Could not start recording with dialogue audio. Please try again.");
+          setRecording(false);
+        }
+      })();
     }, 1000);
   };
 
@@ -188,6 +306,7 @@ export function DubsmashGame() {
   };
 
   const handleRetake = () => {
+    stopBackgroundAudio();
     revokeRecordedUrl();
     setRecordedBlob(null);
     setRecordedUrl(null);
@@ -196,28 +315,44 @@ export function DubsmashGame() {
     startCamera();
   };
 
+  const handleChangeClip = () => {
+    stopBackgroundAudio();
+    setSelectedClip(null);
+  };
+
   if (!selectedClip) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-stretch">
         {DUBSMASH_CLIPS.map((clip, i) => (
-          <Stagger key={clip.id} index={i}>
+          <Stagger key={clip.id} index={i} className="h-full">
             <Card
               glow
               interactive
-              className="cursor-pointer"
+              className="group flex h-[240px] w-full cursor-pointer flex-col overflow-hidden p-5 sm:h-[240px] sm:p-6"
               onClick={() => selectClip(clip)}
             >
-              <div className="flex items-start gap-4">
+              <div className="flex h-full min-h-0 gap-4">
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-gold/20 bg-gold/10 text-2xl transition-transform duration-300 group-hover:scale-110">
                   🎤
                 </div>
-                <div>
-                  <Badge variant="muted">{clip.movie}</Badge>
-                  <h3 className="mt-1 font-display text-lg font-bold text-cream">{clip.title}</h3>
-                  <p className="mt-2 text-sm italic leading-relaxed text-cream/55">
+                <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+                  <div className="min-w-0 shrink-0">
+                    <Badge variant="muted" className="inline-block max-w-full truncate">
+                      {clip.movie}
+                    </Badge>
+                  </div>
+                  <h3 className="mt-1 truncate font-display text-lg font-bold text-cream">
+                    {clip.title}
+                  </h3>
+                  <p
+                    className="mt-2 min-h-0 flex-1 overflow-hidden text-sm italic leading-relaxed text-cream/55 line-clamp-3"
+                    title={clip.dialogue}
+                  >
                     &ldquo;{clip.dialogue}&rdquo;
                   </p>
-                  <p className="mt-2 text-xs text-gold/50">{clip.duration}s clip</p>
+                  <p className="mt-auto shrink-0 pt-3 text-xs text-gold/50">
+                    {clip.duration}s clip
+                  </p>
                 </div>
               </div>
             </Card>
@@ -237,13 +372,20 @@ export function DubsmashGame() {
               {selectedClip.title}
             </h3>
           </div>
-          <Button variant="secondary" size="sm" onClick={() => setSelectedClip(null)}>
+          <Button variant="secondary" size="sm" onClick={handleChangeClip}>
             ← Change
           </Button>
         </div>
         <p className="rounded-xl border border-gold/15 bg-maroon/40 p-5 text-center text-lg italic leading-relaxed text-cream/80">
           &ldquo;{selectedClip.dialogue}&rdquo;
         </p>
+        {!recordedUrl && !recording && countdown === null && (
+          <div className="mt-4 flex justify-center">
+            <Button type="button" variant="secondary" size="sm" onClick={handlePreviewAudio}>
+              {previewingAudio ? "⏹ Stop Preview" : "🔊 Preview Dialogue"}
+            </Button>
+          </div>
+        )}
       </Card>
 
       {cameraError && (
@@ -279,6 +421,12 @@ export function DubsmashGame() {
             <span className="text-sm font-semibold tracking-wider text-white">REC</span>
           </div>
         )}
+
+        {previewingAudio && recording && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-gold/20 px-4 py-1.5 text-xs font-semibold text-gold-light backdrop-blur-sm">
+            Recording with dialogue...
+          </div>
+        )}
       </div>
 
       <GameActionBar className="max-w-lg mx-auto">
@@ -312,11 +460,7 @@ export function DubsmashGame() {
             >
               {saved ? "Uploaded ✓" : saving ? "Uploading..." : "Upload & Download Video"}
             </Button>
-            <Button
-              variant="secondary"
-              className={gameActionButtonClass}
-              onClick={handleRetake}
-            >
+            <Button variant="secondary" className={gameActionButtonClass} onClick={handleRetake}>
               Retake
             </Button>
           </>

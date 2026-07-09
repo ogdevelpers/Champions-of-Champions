@@ -47,11 +47,7 @@ export default async function DashboardPage() {
             <DashboardSection
               id="games"
               title="Play & Compete"
-              description={
-                hasPlayedMemoryGame
-                  ? "Memory Match is complete — thank you for playing! Dubsmash is still open."
-                  : "Memory Match and Dubsmash are live — play now and show your Bollywood flair!"
-              }
+              description="Dubsmash is live — pick a dialogue, record your performance, and save your blockbuster moment!"
               variant="elevated"
             >
               <GameGrid
