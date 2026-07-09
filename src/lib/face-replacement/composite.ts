@@ -6,7 +6,7 @@ function computeSimilarityTransform(
   scaleBoost = 1.12
 ): { translateX: number; translateY: number; rotation: number; scale: number; srcCenter: Point } {
   const srcCenter = midpoint(src.leftEye, src.rightEye);
-  const dstCenter = midpoint(dst.leftEye, dst.rightEye);
+  const dstCenter = midpoint(dst.leftEye, dst.rightEye); 
 
   const srcEyeDist = distance(src.leftEye, src.rightEye);
   const dstEyeDist = distance(dst.leftEye, dst.rightEye);
