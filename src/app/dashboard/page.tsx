@@ -55,7 +55,6 @@ export default async function DashboardPage() {
               variant="elevated"
             >
               <GameGrid
-                canPlayGames={session.canPlayGames}
                 hasPlayedMemoryGame={hasPlayedMemoryGame}
                 previousMemoryActions={previousMemorySubmission?.actions}
                 previousMemoryTimeSeconds={previousMemorySubmission?.time_taken_seconds}

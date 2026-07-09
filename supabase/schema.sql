@@ -17,27 +17,6 @@ CREATE TABLE IF NOT EXISTS employee_ids (
 -- ALTER TABLE employee_ids ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
 -- ALTER TABLE employee_ids ADD COLUMN IF NOT EXISTS can_play_games BOOLEAN DEFAULT false;
 
--- Retro Poster submissions
-CREATE TABLE IF NOT EXISTS retro_poster_submissions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  employee_id TEXT NOT NULL,
-  poster_id TEXT NOT NULL,
-  image_url TEXT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Guess the Actor submissions
-CREATE TABLE IF NOT EXISTS guess_actor_submissions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  employee_id TEXT NOT NULL,
-  answers JSONB NOT NULL,
-  score INTEGER NOT NULL,
-  total_questions INTEGER NOT NULL,
-  time_taken_seconds INTEGER NOT NULL,
-  is_winner BOOLEAN DEFAULT false,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
 -- Memory Game results
 CREATE TABLE IF NOT EXISTS memory_game_results (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -48,31 +27,8 @@ CREATE TABLE IF NOT EXISTS memory_game_results (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Dubsmash submissions
-CREATE TABLE IF NOT EXISTS dubsmash_submissions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  employee_id TEXT NOT NULL,
-  clip_id TEXT NOT NULL,
-  video_url TEXT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Live stream interaction tracking
-CREATE TABLE IF NOT EXISTS live_stream_events (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  employee_id TEXT NOT NULL,
-  stream_event_id TEXT NOT NULL,
-  action TEXT NOT NULL,
-  stream_url TEXT,
-  metadata JSONB DEFAULT '{}',
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
 -- Indexes for leaderboard queries
-CREATE INDEX IF NOT EXISTS idx_guess_actor_score ON guess_actor_submissions (score DESC, time_taken_seconds ASC);
 CREATE INDEX IF NOT EXISTS idx_memory_game ON memory_game_results (actions ASC, time_taken_seconds ASC);
-CREATE INDEX IF NOT EXISTS idx_live_stream_events_employee ON live_stream_events (employee_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_live_stream_events_action ON live_stream_events (action, created_at DESC);
 
 -- Sample employee IDs (replace with your actual IDs)
 INSERT INTO employee_ids (employee_id, name, can_play_games) VALUES
@@ -80,7 +36,3 @@ INSERT INTO employee_ids (employee_id, name, can_play_games) VALUES
   ('EMP002', 'Demo User 2', true),
   ('EMP003', 'Demo User 3', true)
 ON CONFLICT (employee_id) DO NOTHING;
-
--- Storage buckets (create via Supabase Dashboard or run in SQL):
--- INSERT INTO storage.buckets (id, name, public) VALUES ('retro-posters', 'retro-posters', true);
--- INSERT INTO storage.buckets (id, name, public) VALUES ('dubsmash-videos', 'dubsmash-videos', true);

@@ -1,13 +1,12 @@
 # Champions of Champions — Employee Engagement Microsite
 
-A Next.js microsite with four Bollywood-themed engagement games, employee ID login via Supabase, and result storage.
+A Next.js microsite with a Memory Match game, employee ID login via Supabase, and result storage.
 
 ## Games
 
-1. **Retro Posters** — Upload your photo and star in classic Bollywood poster templates. Save & download your creation.
-2. **Guess The Star** — Identify 9 Bollywood actors from their smiles within 3 minutes. Results saved for winner list.
-3. **Memory Match** — 3×3 grid with 4 matching pairs. Tracks actions and time to complete.
-4. **Dubsmash** — Pick a dialogue, record yourself enacting it, save & download your video.
+1. **Memory Match** — Flip tiles and find matching pairs. Tracks actions and time to complete. One attempt per employee.
+
+Employees with `can_play_games = true` see the game on the dashboard. Others see a stay-tuned message.
 
 ## Setup
 
@@ -21,10 +20,7 @@ npm install
 
 1. Create a project at [supabase.com](https://supabase.com)
 2. Run the SQL in `supabase/schema.sql` in the Supabase SQL Editor
-3. Create two storage buckets in Supabase Dashboard → Storage:
-   - `retro-posters` (public)
-   - `dubsmash-videos` (public)
-4. Copy `.env.local.example` to `.env.local` and fill in your keys:
+3. Copy `.env.local.example` to `.env.local` and fill in your keys:
 
 ```bash
 cp .env.local.example .env.local
@@ -35,12 +31,12 @@ cp .env.local.example .env.local
 Insert your employee IDs into the `employee_ids` table:
 
 ```sql
-INSERT INTO employee_ids (employee_id, name) VALUES
-  ('YOUR_ID_1', 'Employee Name 1'),
-  ('YOUR_ID_2', 'Employee Name 2');
+INSERT INTO employee_ids (employee_id, name, can_play_games) VALUES
+  ('YOUR_ID_1', 'Employee Name 1', true),
+  ('YOUR_ID_2', 'Employee Name 2', false);
 ```
 
-Demo IDs `EMP001`, `EMP002`, `EMP003` are included in the schema.
+Demo IDs `EMP001`, `EMP002`, `EMP003` are included in the schema with `can_play_games = true`.
 
 ### 4. Run locally
 
@@ -55,9 +51,7 @@ Open [http://localhost:3000](http://localhost:3000)
 - **Next.js 16** (App Router)
 - **React 19**
 - **Tailwind CSS 4**
-- **Supabase** (PostgreSQL + Storage)
-- **Canvas API** (poster face replacement)
-- **MediaRecorder API** (dubsmash video recording)
+- **Supabase** (PostgreSQL)
 
 ## Project Structure
 
@@ -66,7 +60,7 @@ src/
 ├── app/
 │   ├── api/          # Auth & game submission APIs
 │   ├── dashboard/    # Game selection dashboard
-│   ├── games/        # Individual game pages
+│   ├── games/        # Memory game page
 │   └── login/        # Employee ID login
 ├── components/
 │   ├── games/        # Game components
@@ -78,8 +72,5 @@ src/
 
 ## Customization
 
-- **Poster templates**: Edit `src/lib/game-data/posters.ts`
-- **Actor quiz answers**: Edit `src/lib/game-data/actors.ts` and replace SVG images in `public/games/actors/`
 - **Memory tiles**: Edit `src/lib/game-data/memory-tiles.ts`
-- **Dubsmash dialogues**: Edit `src/lib/game-data/dubsmash-clips.ts`
-- **Quiz timer**: Change `GUESS_TIME_SECONDS` in `src/lib/game-data/actors.ts`
+- **Event schedule message**: Edit `EVENT_SCHEDULE_MESSAGE` in `src/lib/games/config.ts`
