@@ -1,12 +1,13 @@
 # Champions of Champions — Employee Engagement Microsite
 
-A Next.js microsite with a Memory Match game, employee ID login via Supabase, and result storage.
+A Next.js microsite with Memory Match and Dubsmash games, employee ID login via Supabase, and result storage.
 
 ## Games
 
 1. **Memory Match** — Flip tiles and find matching pairs. Tracks actions and time to complete. One attempt per employee.
+2. **Dubsmash** — Pick a dialogue, record yourself enacting it, save & download your video.
 
-Employees with `can_play_games = true` see the game on the dashboard. Others see a stay-tuned message.
+Employees with `can_play_games = true` see the games on the dashboard. Others see a stay-tuned message.
 
 ## Setup
 
@@ -20,7 +21,9 @@ npm install
 
 1. Create a project at [supabase.com](https://supabase.com)
 2. Run the SQL in `supabase/schema.sql` in the Supabase SQL Editor
-3. Copy `.env.local.example` to `.env.local` and fill in your keys:
+3. Create a storage bucket in Supabase Dashboard → Storage:
+   - `dubsmash-videos` (public)
+4. Copy `.env.local.example` to `.env.local` and fill in your keys:
 
 ```bash
 cp .env.local.example .env.local
@@ -51,7 +54,8 @@ Open [http://localhost:3000](http://localhost:3000)
 - **Next.js 16** (App Router)
 - **React 19**
 - **Tailwind CSS 4**
-- **Supabase** (PostgreSQL)
+- **Supabase** (PostgreSQL + Storage)
+- **MediaRecorder API** (dubsmash video recording)
 
 ## Project Structure
 
@@ -60,7 +64,7 @@ src/
 ├── app/
 │   ├── api/          # Auth & game submission APIs
 │   ├── dashboard/    # Game selection dashboard
-│   ├── games/        # Memory game page
+│   ├── games/        # Memory and Dubsmash game pages
 │   └── login/        # Employee ID login
 ├── components/
 │   ├── games/        # Game components
@@ -73,4 +77,5 @@ src/
 ## Customization
 
 - **Memory tiles**: Edit `src/lib/game-data/memory-tiles.ts`
+- **Dubsmash dialogues**: Edit `src/lib/game-data/dubsmash-clips.ts`
 - **Event schedule message**: Edit `EVENT_SCHEDULE_MESSAGE` in `src/lib/games/config.ts`

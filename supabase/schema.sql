@@ -27,6 +27,15 @@ CREATE TABLE IF NOT EXISTS memory_game_results (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Dubsmash submissions
+CREATE TABLE IF NOT EXISTS dubsmash_submissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  employee_id TEXT NOT NULL,
+  clip_id TEXT NOT NULL,
+  video_url TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Indexes for leaderboard queries
 CREATE INDEX IF NOT EXISTS idx_memory_game ON memory_game_results (actions ASC, time_taken_seconds ASC);
 
@@ -36,3 +45,6 @@ INSERT INTO employee_ids (employee_id, name, can_play_games) VALUES
   ('EMP002', 'Demo User 2', true),
   ('EMP003', 'Demo User 3', true)
 ON CONFLICT (employee_id) DO NOTHING;
+
+-- Storage buckets (create via Supabase Dashboard or run in SQL):
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('dubsmash-videos', 'dubsmash-videos', true);

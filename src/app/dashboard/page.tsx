@@ -49,8 +49,8 @@ export default async function DashboardPage() {
               title="Play & Compete"
               description={
                 hasPlayedMemoryGame
-                  ? "Memory Match is complete — thank you for playing!"
-                  : "Memory Match is live now — flip the tiles and find all matching pairs. You get one attempt!"
+                  ? "Memory Match is complete — thank you for playing! Dubsmash is still open."
+                  : "Memory Match and Dubsmash are live — play now and show your Bollywood flair!"
               }
               variant="elevated"
             >

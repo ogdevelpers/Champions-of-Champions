@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Stagger } from "@/components/ui/Animated";
 import { cn, formatTime } from "@/lib/utils";
+import { isGameOpen, type GameId } from "@/lib/games/config";
 
 interface GameDefinition {
   id: string;
@@ -14,17 +15,30 @@ interface GameDefinition {
   href: string;
   tag: string;
   accent: string;
+  oneAttempt?: boolean;
 }
 
-const MEMORY_GAME: GameDefinition = {
-  id: "memory",
-  title: "Memory Match",
-  description: "Flip tiles, find matching pairs — fewer moves and faster time wins!",
-  emoji: "🧩",
-  href: "/games/memory",
-  tag: "One Attempt",
-  accent: "from-emerald-500/20 to-teal-600/10",
-};
+const GAMES: GameDefinition[] = [
+  {
+    id: "memory",
+    title: "Memory Match",
+    description: "Flip tiles, find matching pairs — fewer moves and faster time wins!",
+    emoji: "🧩",
+    href: "/games/memory",
+    tag: "One Attempt",
+    accent: "from-emerald-500/20 to-teal-600/10",
+    oneAttempt: true,
+  },
+  {
+    id: "dubsmash",
+    title: "Dubsmash",
+    description: "Enact iconic Bollywood dialogues and save your blockbuster moment!",
+    emoji: "🎤",
+    href: "/games/dubsmash",
+    tag: "Record & Share",
+    accent: "from-purple-500/20 to-pink-600/10",
+  },
+];
 
 interface GameGridProps {
   hasPlayedMemoryGame?: boolean;
@@ -32,17 +46,28 @@ interface GameGridProps {
   previousMemoryTimeSeconds?: number;
 }
 
+function isGameDisabled(
+  game: GameDefinition,
+  hasPlayedMemoryGame: boolean
+): boolean {
+  if (game.id === "memory" && hasPlayedMemoryGame) return true;
+  return false;
+}
+
 function getDisabledLabel(
+  game: GameDefinition,
   hasPlayedMemoryGame: boolean,
   previousMemoryActions?: number,
   previousMemoryTimeSeconds?: number
 ): string {
-  if (!hasPlayedMemoryGame) return "Play Now →";
-  const timeLabel =
-    typeof previousMemoryTimeSeconds === "number"
-      ? formatTime(previousMemoryTimeSeconds)
-      : "—";
-  return `Already played · ${previousMemoryActions ?? 0} actions · ${timeLabel}`;
+  if (game.id === "memory" && hasPlayedMemoryGame) {
+    const timeLabel =
+      typeof previousMemoryTimeSeconds === "number"
+        ? formatTime(previousMemoryTimeSeconds)
+        : "—";
+    return `Already played · ${previousMemoryActions ?? 0} actions · ${timeLabel}`;
+  }
+  return "Play Now →";
 }
 
 export function GameGrid({
@@ -50,26 +75,40 @@ export function GameGrid({
   previousMemoryActions,
   previousMemoryTimeSeconds,
 }: GameGridProps) {
-  const disabled = hasPlayedMemoryGame;
-  const disabledLabel = getDisabledLabel(
-    hasPlayedMemoryGame,
-    previousMemoryActions,
-    previousMemoryTimeSeconds
-  );
+  const visibleGames = GAMES.filter((game) => isGameOpen(game.id as GameId));
 
   return (
-    <div className="mx-auto grid w-full max-w-xl grid-cols-1 gap-4">
-      <Stagger index={1} className="h-full w-full">
-        {disabled ? (
-          <div className="block h-full w-full cursor-not-allowed" aria-disabled="true">
-            <GameCard game={MEMORY_GAME} disabled disabledLabel={disabledLabel} />
-          </div>
-        ) : (
-          <Link href={MEMORY_GAME.href} className="block h-full w-full cursor-pointer">
-            <GameCard game={MEMORY_GAME} />
-          </Link>
-        )}
-      </Stagger>
+    <div
+      className={cn(
+        "grid w-full gap-4",
+        visibleGames.length === 1
+          ? "mx-auto max-w-xl grid-cols-1"
+          : "grid-cols-1 sm:grid-cols-2 sm:gap-5"
+      )}
+    >
+      {visibleGames.map((game, i) => {
+        const disabled = isGameDisabled(game, hasPlayedMemoryGame);
+        const disabledLabel = getDisabledLabel(
+          game,
+          hasPlayedMemoryGame,
+          previousMemoryActions,
+          previousMemoryTimeSeconds
+        );
+
+        return (
+          <Stagger key={game.id} index={i + 1} className="h-full w-full">
+            {disabled ? (
+              <div className="block h-full w-full cursor-not-allowed" aria-disabled="true">
+                <GameCard game={game} disabled disabledLabel={disabledLabel} />
+              </div>
+            ) : (
+              <Link href={game.href} className="block h-full w-full cursor-pointer">
+                <GameCard game={game} />
+              </Link>
+            )}
+          </Stagger>
+        );
+      })}
     </div>
   );
 }
