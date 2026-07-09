@@ -3,7 +3,7 @@ import { getSession } from "@/lib/auth";
 import { requirePlayableSession } from "@/lib/require-playable-session";
 import { createServiceClient } from "@/lib/supabase/server";
 import { TOTAL_QUESTIONS, calculateScore, type GuessResult } from "@/lib/game-data/actors";
-import { GAMES_CLOSED_HEADLINE, GAMES_CLOSED_MESSAGE, GAMES_WINDOW_OPEN } from "@/lib/games/config";
+import { GAMES_CLOSED_HEADLINE, GAMES_CLOSED_MESSAGE, isGameOpen } from "@/lib/games/config";
 
 export const runtime = "edge";
 
@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
   const { session, response } = await requirePlayableSession();
   if (response) return response;
 
-  if (!GAMES_WINDOW_OPEN) {
+  if (!isGameOpen("guess-actor")) {
     return NextResponse.json(
       { error: `${GAMES_CLOSED_HEADLINE} ${GAMES_CLOSED_MESSAGE}` },
       { status: 403 }

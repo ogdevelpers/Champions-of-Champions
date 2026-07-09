@@ -9,7 +9,7 @@ const geist = Geist({
 
 export const metadata: Metadata = {
   title: "Champions of Champions | Employee Engagement",
-  description: "Guess the Smile — identify Bollywood stars from their smiles",
+  description: "Play Memory Match — find all matching pairs in one attempt",
 };
 
 export default function RootLayout({

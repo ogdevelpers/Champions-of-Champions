@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { EmployeeSession } from "@/lib/auth";
+import { EVENT_SCHEDULE_MESSAGE } from "@/lib/games/config";
 
 interface DashboardWelcomeProps {
   session: EmployeeSession;
@@ -39,7 +40,7 @@ export function DashboardWelcome({ session }: DashboardWelcomeProps) {
                 {session.canPlayGames ? (
                   <span className="text-emerald-200">Eligible to play</span>
                 ) : (
-                  <span className="text-amber-100">View only</span>
+                  <span className="text-amber-100">{EVENT_SCHEDULE_MESSAGE}</span>
                 )}
               </dd>
             </div>

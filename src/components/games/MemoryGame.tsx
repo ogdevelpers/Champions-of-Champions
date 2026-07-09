@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Link from "next/link";
 import { createShuffledDeck, MEMORY_TILES } from "@/lib/game-data/memory-tiles";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { StatBox } from "@/components/ui/StatBox";
 import { GameStartCard, GameResultCard } from "@/components/ui/GameScreen";
 import { FadeIn } from "@/components/ui/Animated";
@@ -11,6 +13,12 @@ import { formatTime } from "@/lib/utils";
 type DeckTile = ReturnType<typeof createShuffledDeck>[number];
 
 const TOTAL_PAIRS = MEMORY_TILES.length;
+
+interface MemoryGameProps {
+  hasPlayed?: boolean;
+  previousActions?: number;
+  previousTimeSeconds?: number;
+}
 
 interface GridLayout {
   cols: number;
@@ -86,7 +94,11 @@ function CenteredScreen({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function MemoryGame() {
+export function MemoryGame({
+  hasPlayed = false,
+  previousActions,
+  previousTimeSeconds,
+}: MemoryGameProps) {
   const [deck, setDeck] = useState<DeckTile[]>([]);
   const [flipped, setFlipped] = useState<string[]>([]);
   const [matched, setMatched] = useState<string[]>([]);
@@ -172,12 +184,38 @@ export function MemoryGame() {
     }
   };
 
+  if (hasPlayed) {
+    return (
+      <CenteredScreen>
+        <Card glow className="mx-auto max-w-lg text-center">
+          <div className="mb-4 text-6xl">✅</div>
+          <h2 className="font-display text-2xl font-bold gold-gradient-text">Already Played</h2>
+          <p className="text-body mt-4 leading-relaxed">
+            You have already completed Memory Match. Each participant gets one attempt only.
+          </p>
+          {typeof previousActions === "number" && typeof previousTimeSeconds === "number" && (
+            <div className="mt-6 grid grid-cols-2 gap-4">
+              <StatBox label="Actions" value={previousActions} />
+              <StatBox label="Time" value={formatTime(previousTimeSeconds)} />
+            </div>
+          )}
+          <Link href="/dashboard" className="mt-8 inline-block">
+            <Button variant="secondary" size="lg">
+              Back to Dashboard
+            </Button>
+          </Link>
+        </Card>
+      </CenteredScreen>
+    );
+  }
+
   if (!started) {
     return (
       <CenteredScreen>
         <GameStartCard
           emoji="🧩"
           title="Memory Match"
+          subtitle="One attempt only"
           description={`Flip tiles one at a time to find matching pairs. Match all ${TOTAL_PAIRS} pairs to win!`}
           onStart={initGame}
         />
@@ -192,25 +230,31 @@ export function MemoryGame() {
           emoji="🎉"
           title="Congratulations!"
           footer={
-            <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+            scoreSubmitted ? (
+              <Link href="/dashboard">
+                <Button variant="secondary" size="lg">
+                  Back to Dashboard
+                </Button>
+              </Link>
+            ) : (
               <Button
                 onClick={handleSubmitScore}
                 variant="primary"
                 size="lg"
-                disabled={saving || scoreSubmitted}
+                disabled={saving}
               >
-                {scoreSubmitted ? "Submitted ✓" : saving ? "Submitting..." : "Submit Score"}
+                {saving ? "Submitting..." : "Submit Score"}
               </Button>
-              <Button onClick={initGame} variant="secondary" size="lg">
-                Play Again
-              </Button>
-            </div>
+            )
           }
         >
           <div className="grid grid-cols-2 gap-4">
             <StatBox label="Actions" value={actions} />
             <StatBox label="Time" value={formatTime(elapsed)} />
           </div>
+          {scoreSubmitted && (
+            <p className="mt-4 text-sm text-gold">Score submitted successfully!</p>
+          )}
         </GameResultCard>
       </CenteredScreen>
     );

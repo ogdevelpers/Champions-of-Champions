@@ -4,57 +4,147 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Stagger } from "@/components/ui/Animated";
-import { cn } from "@/lib/utils";
+import { cn, formatTime } from "@/lib/utils";
 import { TOTAL_QUESTIONS } from "@/lib/game-data/actors";
+import { isGameOpen, type GameId } from "@/lib/games/config";
 
-const GUESS_SMILE_GAME = {
-  id: "guess-actor",
-  title: "Guess the Smile",
-  description: "24 smile close-ups, 30 seconds, 4 options each — how many stars can you name?",
-  emoji: "😁",
-  href: "/games/guess-actor",
-  tag: "One Attempt",
-  accent: "from-yellow-500/20 to-amber-600/10",
-};
+interface GameDefinition {
+  id: string;
+  title: string;
+  description: string;
+  emoji: string;
+  href: string;
+  tag: string;
+  accent: string;
+  oneAttempt?: boolean;
+}
+
+const GAMES: GameDefinition[] = [
+  {
+    id: "guess-actor",
+    title: "Guess the Smile",
+    description: "24 smile close-ups, 30 seconds, 4 options each — how many stars can you name?",
+    emoji: "😁",
+    href: "/games/guess-actor",
+    tag: "One Attempt",
+    accent: "from-yellow-500/20 to-amber-600/10",
+    oneAttempt: true,
+  },
+  {
+    id: "memory",
+    title: "Memory Match",
+    description: "Flip tiles, find matching pairs — fewer moves and faster time wins!",
+    emoji: "🧩",
+    href: "/games/memory",
+    tag: "One Attempt",
+    accent: "from-emerald-500/20 to-teal-600/10",
+    oneAttempt: true,
+  },
+  {
+    id: "dubsmash",
+    title: "Dubsmash",
+    description: "Enact iconic Bollywood dialogues and save your blockbuster moment!",
+    emoji: "🎤",
+    href: "/games/dubsmash",
+    tag: "Record & Share",
+    accent: "from-purple-500/20 to-pink-600/10",
+  },
+];
 
 interface GameGridProps {
   canPlayGames?: boolean;
   hasPlayedGuessGame?: boolean;
-  previousScore?: number;
-  gamesWindowOpen?: boolean;
+  previousGuessScore?: number;
+  hasPlayedMemoryGame?: boolean;
+  previousMemoryActions?: number;
+  previousMemoryTimeSeconds?: number;
+}
+
+function isGameDisabled(
+  game: GameDefinition,
+  canPlayGames: boolean,
+  hasPlayedGuessGame: boolean,
+  hasPlayedMemoryGame: boolean
+): boolean {
+  if (!canPlayGames) return true;
+  if (game.id === "guess-actor" && hasPlayedGuessGame) return true;
+  if (game.id === "memory" && hasPlayedMemoryGame) return true;
+  return false;
+}
+
+function getDisabledLabel(
+  game: GameDefinition,
+  canPlayGames: boolean,
+  hasPlayedGuessGame: boolean,
+  hasPlayedMemoryGame: boolean,
+  previousGuessScore?: number,
+  previousMemoryActions?: number,
+  previousMemoryTimeSeconds?: number
+): string {
+  if (!canPlayGames) return "Not eligible";
+  if (game.id === "guess-actor" && hasPlayedGuessGame) {
+    return `Already played · Score ${previousGuessScore ?? 0}/${TOTAL_QUESTIONS}`;
+  }
+  if (game.id === "memory" && hasPlayedMemoryGame) {
+    const timeLabel =
+      typeof previousMemoryTimeSeconds === "number"
+        ? formatTime(previousMemoryTimeSeconds)
+        : "—";
+    return `Already played · ${previousMemoryActions ?? 0} actions · ${timeLabel}`;
+  }
+  return "Not eligible";
 }
 
 export function GameGrid({
   canPlayGames = true,
   hasPlayedGuessGame = false,
-  previousScore,
-  gamesWindowOpen = true,
+  previousGuessScore,
+  hasPlayedMemoryGame = false,
+  previousMemoryActions,
+  previousMemoryTimeSeconds,
 }: GameGridProps) {
-  const disabled = !gamesWindowOpen || !canPlayGames || hasPlayedGuessGame;
+  const visibleGames = GAMES.filter((game) => isGameOpen(game.id as GameId));
 
   return (
-    <div className="mx-auto grid w-full max-w-xl grid-cols-1 gap-4">
-      <Stagger index={1} className="h-full w-full">
-        {disabled ? (
-          <div className="block h-full w-full cursor-not-allowed" aria-disabled="true">
-            <GameCard
-              game={GUESS_SMILE_GAME}
-              disabled
-              disabledLabel={
-                !gamesWindowOpen
-                  ? "Closed for today"
-                  : hasPlayedGuessGame
-                    ? `Already played · Score ${previousScore ?? 0}/${TOTAL_QUESTIONS}`
-                    : "Not eligible"
-              }
-            />
-          </div>
-        ) : (
-          <Link href={GUESS_SMILE_GAME.href} className="block h-full w-full cursor-pointer">
-            <GameCard game={GUESS_SMILE_GAME} />
-          </Link>
-        )}
-      </Stagger>
+    <div
+      className={cn(
+        "grid w-full gap-4",
+        visibleGames.length === 1
+          ? "mx-auto max-w-xl grid-cols-1"
+          : "grid-cols-1 sm:grid-cols-2 sm:gap-5"
+      )}
+    >
+      {visibleGames.map((game, i) => {
+        const disabled = isGameDisabled(
+          game,
+          canPlayGames,
+          hasPlayedGuessGame,
+          hasPlayedMemoryGame
+        );
+        const disabledLabel = getDisabledLabel(
+          game,
+          canPlayGames,
+          hasPlayedGuessGame,
+          hasPlayedMemoryGame,
+          previousGuessScore,
+          previousMemoryActions,
+          previousMemoryTimeSeconds
+        );
+
+        return (
+          <Stagger key={game.id} index={i + 1} className="h-full w-full">
+            {disabled ? (
+              <div className="block h-full w-full cursor-not-allowed" aria-disabled="true">
+                <GameCard game={game} disabled disabledLabel={disabledLabel} />
+              </div>
+            ) : (
+              <Link href={game.href} className="block h-full w-full cursor-pointer">
+                <GameCard game={game} />
+              </Link>
+            )}
+          </Stagger>
+        );
+      })}
     </div>
   );
 }
@@ -64,7 +154,7 @@ function GameCard({
   disabled = false,
   disabledLabel = "Not eligible",
 }: {
-  game: typeof GUESS_SMILE_GAME;
+  game: GameDefinition;
   disabled?: boolean;
   disabledLabel?: string;
 }) {

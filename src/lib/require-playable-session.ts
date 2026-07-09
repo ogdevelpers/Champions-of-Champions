@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
+import { EVENT_SCHEDULE_MESSAGE } from "@/lib/games/config";
 
 export async function requirePlayableSession() {
   const session = await getSession();
@@ -15,7 +16,7 @@ export async function requirePlayableSession() {
     return {
       session: null,
       response: NextResponse.json(
-        { error: "You are not eligible to play games. Please contact your administrator." },
+        { error: EVENT_SCHEDULE_MESSAGE },
         { status: 403 }
       ),
     };
