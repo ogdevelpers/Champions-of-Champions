@@ -10,7 +10,7 @@ export type GameId = "memory" | "dubsmash";
 
 export const GAME_AVAILABILITY: Record<GameId, boolean> = {
   memory: false,
-  dubsmash: false,
+  dubsmash: true,
 };
 
 export function isGameOpen(gameId: GameId): boolean {
