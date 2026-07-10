@@ -35,7 +35,7 @@ export const DUBSMASH_CLIPS: DubsmashClip[] = [
   {
     id: "dialogue-4",
     title: "Dialogue 4",
-    movie: "Bollywood",
+    movie: "Marte Dam Tak",
     dialogue: "Namumkin ko mumkin banana hi ka to doosra naam Rana hai, aindah namumkin ka lafz tumhari zubaan par nahin aana chahiye",
     duration: 9,
     audioUrl: "/games/dubsmash/audio/4.mp3",
