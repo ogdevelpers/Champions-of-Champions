@@ -43,9 +43,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const existing = await getInstagramChallengeSubmission(session.employeeId);
-    if (existing?.instagram_screenshot_url) {
+    if (existing) {
       return NextResponse.json(
-        { error: "You have already completed this challenge." },
+        { error: "You have already saved your branded photo." },
         { status: 409 }
       );
     }
@@ -72,21 +72,11 @@ export async function POST(request: NextRequest) {
     const capturedAt = new Date().toISOString();
     const brandedImageUrl = await getInstagramChallengeSignedUrl(supabase, urlData.publicUrl);
 
-    const row = {
+    const { error: dbError } = await supabase.from("instagram_challenge_submissions").insert({
       employee_id: session.employeeId,
       branded_image_url: urlData.publicUrl,
       photo_captured_at: capturedAt,
-      instagram_screenshot_url: null,
-      likes_count: null,
-      screenshot_uploaded_at: null,
-    };
-
-    const { error: dbError } = existing
-      ? await supabase
-          .from("instagram_challenge_submissions")
-          .update(row)
-          .eq("employee_id", session.employeeId)
-      : await supabase.from("instagram_challenge_submissions").insert(row);
+    });
 
     if (dbError) {
       console.error("DB error:", dbError);

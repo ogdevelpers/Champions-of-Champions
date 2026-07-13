@@ -204,8 +204,6 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
     if (brandedPreview) URL.revokeObjectURL(brandedPreview);
     setBrandedPreview(null);
     setBrandedBlob(null);
-    setSavedBrandedPreview(null);
-    setSubmission(null);
     setError(null);
     await startCamera();
   };
@@ -297,7 +295,6 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
   };
 
   const brandedPhotoSrc = savedBrandedPreview || submission?.branded_image_url;
-  const canRetakeSaved = !!submission && !submission.instagram_screenshot_url;
 
   const screenshotUnlocked =
     submission && !submission.instagram_screenshot_url
@@ -441,11 +438,6 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
             <Button variant="secondary" size="sm" onClick={handleDownloadAgain}>
               Download Again
             </Button>
-            {canRetakeSaved && (
-              <Button variant="secondary" size="sm" onClick={retake}>
-                Retake
-              </Button>
-            )}
           </div>
           <p className="text-center text-sm text-cream/75">
             Post this on Instagram and tag <strong className="text-gold-light">{INSTAGRAM_HANDLE}</strong>
