@@ -36,8 +36,21 @@ CREATE TABLE IF NOT EXISTS dubsmash_submissions (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Instagram photo challenge submissions
+CREATE TABLE IF NOT EXISTS instagram_challenge_submissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  employee_id TEXT NOT NULL UNIQUE,
+  branded_image_url TEXT NOT NULL,
+  photo_captured_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  instagram_screenshot_url TEXT,
+  likes_count INTEGER,
+  screenshot_uploaded_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Indexes for leaderboard queries
 CREATE INDEX IF NOT EXISTS idx_memory_game ON memory_game_results (actions ASC, time_taken_seconds ASC);
+CREATE INDEX IF NOT EXISTS idx_instagram_likes ON instagram_challenge_submissions (likes_count DESC NULLS LAST);
 
 -- Sample employee IDs (replace with your actual IDs)
 INSERT INTO employee_ids (employee_id, name, can_play_games) VALUES
@@ -48,3 +61,4 @@ ON CONFLICT (employee_id) DO NOTHING;
 
 -- Storage buckets (create via Supabase Dashboard or run in SQL):
 -- INSERT INTO storage.buckets (id, name, public) VALUES ('dubsmash-videos', 'dubsmash-videos', true);
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('instagram-challenge', 'instagram-challenge', true);

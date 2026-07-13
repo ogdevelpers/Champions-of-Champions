@@ -38,6 +38,15 @@ const GAMES: GameDefinition[] = [
     tag: "Record & Share",
     accent: "from-purple-500/20 to-pink-600/10",
   },
+  {
+    id: "instagram-challenge",
+    title: "Champion Click",
+    description: "Snap a branded photo, post on Instagram, and compete for the highest likes!",
+    emoji: "📸",
+    href: "/games/instagram-challenge",
+    tag: "Photo Challenge",
+    accent: "from-rose-500/20 to-orange-600/10",
+  },
 ];
 
 interface GameGridProps {

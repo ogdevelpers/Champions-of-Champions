@@ -47,7 +47,7 @@ export default async function DashboardPage() {
             <DashboardSection
               id="games"
               title="Play & Compete"
-              description="Dubsmash is live — pick a dialogue, record your performance, and save your blockbuster moment!"
+              description="Dubsmash and Champion Click are live — record your dialogue or share your branded Instagram photo!"
               variant="elevated"
             >
               <GameGrid

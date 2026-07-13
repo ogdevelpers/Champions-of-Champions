@@ -18,5 +18,19 @@ CREATE TABLE IF NOT EXISTS dubsmash_submissions (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS instagram_challenge_submissions (
+  id BIGSERIAL PRIMARY KEY,
+  employee_id TEXT NOT NULL UNIQUE,
+  branded_image_url TEXT NOT NULL,
+  photo_captured_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  instagram_screenshot_url TEXT,
+  likes_count INTEGER,
+  screenshot_uploaded_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS idx_memory_game
   ON memory_game_results (actions ASC, time_taken_seconds ASC);
+
+CREATE INDEX IF NOT EXISTS idx_instagram_likes
+  ON instagram_challenge_submissions (likes_count DESC NULLS LAST);
