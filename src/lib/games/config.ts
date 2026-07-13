@@ -6,10 +6,9 @@ export const EVENT_SCHEDULE_HEADLINE = "🎬 Stay tuned!";
 
 export const EVENT_SCHEDULE_MESSAGE = "The event is on 15th July 2026 at 5:15 PM.";
 
-export type GameId = "memory" | "dubsmash" | "instagram-challenge";
+export type GameId = "dubsmash" | "instagram-challenge";
 
 export const GAME_AVAILABILITY: Record<GameId, boolean> = {
-  memory: false,
   dubsmash: true,
   "instagram-challenge": true,
 };

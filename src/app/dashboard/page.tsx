@@ -5,7 +5,6 @@ import { AppHeader } from "@/components/AppHeader";
 import { GameGrid } from "@/components/GameGrid";
 import { PageShell } from "@/components/PageShell";
 import { FadeIn } from "@/components/ui/Animated";
-import { getMemorySubmission } from "@/lib/games/memory-status";
 import { hasOpenGames } from "@/lib/games/config";
 import { GamesClosedNotice } from "@/components/games/GamesClosedNotice";
 import { EventScheduleNotice } from "@/components/games/EventScheduleNotice";
@@ -15,11 +14,6 @@ export const runtime = "edge";
 export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect("/login");
-
-  const previousMemorySubmission = session.canPlayGames
-    ? await getMemorySubmission(session.employeeId)
-    : null;
-  const hasPlayedMemoryGame = !!previousMemorySubmission;
 
   return (
     <PageShell overlay={false}>
@@ -50,11 +44,7 @@ export default async function DashboardPage() {
               description="Dubsmash and Champion Click are live — record your dialogue or share your branded Instagram photo!"
               variant="elevated"
             >
-              <GameGrid
-                hasPlayedMemoryGame={hasPlayedMemoryGame}
-                previousMemoryActions={previousMemorySubmission?.actions}
-                previousMemoryTimeSeconds={previousMemorySubmission?.time_taken_seconds}
-              />
+              <GameGrid />
             </DashboardSection>
           </FadeIn>
         )}

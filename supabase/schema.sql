@@ -17,16 +17,6 @@ CREATE TABLE IF NOT EXISTS employee_ids (
 -- ALTER TABLE employee_ids ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
 -- ALTER TABLE employee_ids ADD COLUMN IF NOT EXISTS can_play_games BOOLEAN DEFAULT false;
 
--- Memory Game results
-CREATE TABLE IF NOT EXISTS memory_game_results (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  employee_id TEXT NOT NULL,
-  actions INTEGER NOT NULL,
-  time_taken_seconds NUMERIC NOT NULL,
-  completed BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
 -- Dubsmash submissions
 CREATE TABLE IF NOT EXISTS dubsmash_submissions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -49,7 +39,6 @@ CREATE TABLE IF NOT EXISTS instagram_challenge_submissions (
 );
 
 -- Indexes for leaderboard queries
-CREATE INDEX IF NOT EXISTS idx_memory_game ON memory_game_results (actions ASC, time_taken_seconds ASC);
 CREATE INDEX IF NOT EXISTS idx_instagram_likes ON instagram_challenge_submissions (likes_count DESC NULLS LAST);
 
 -- Sample employee IDs (replace with your actual IDs)
