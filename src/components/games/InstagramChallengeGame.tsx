@@ -28,7 +28,7 @@ const HOW_TO_PLAY = [
   "Click your photo using the event's digital frame.",
   "Download your branded picture.",
   `Post it on your Instagram and tag ${INSTAGRAM_HANDLE}.`,
-  `After ${getScreenshotUnlockLabel()}, return to the portal and upload a screenshot of your Instagram post showing the number of likes.`,
+  `From ${getScreenshotUnlockLabel()}, return to the portal and upload a screenshot of your Instagram post showing the number of likes.`,
   "The post with the highest likes wins an exciting hamper! 🏆",
 ];
 
@@ -447,10 +447,10 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
 
       {submission && !submission.instagram_screenshot_url && !screenshotUnlocked && (
         <Card glow className="text-center">
-          <Badge variant="muted">Step 2 · After {getScreenshotUnlockLabel()}</Badge>
+          <Badge variant="muted">Step 2 · Unlocks {getScreenshotUnlockLabel()}</Badge>
           <h3 className="mt-3 font-display text-xl font-bold text-cream">Screenshot Upload Locked</h3>
           <p className="text-body mt-3 text-sm leading-relaxed">
-            Come back after {getScreenshotUnlockLabel()} to upload your Instagram post screenshot with likes.
+            Come back on {getScreenshotUnlockLabel()} to upload your Instagram post screenshot with likes.
           </p>
           <p className="mt-4 font-display text-2xl font-bold text-gold-light">{countdownLabel}</p>
         </Card>

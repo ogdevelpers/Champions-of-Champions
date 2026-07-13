@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     if (!canUploadScreenshot(submission.photo_captured_at)) {
       return NextResponse.json(
-        { error: `Screenshot upload unlocks ${getScreenshotUnlockLabel()} after saving your branded photo.` },
+        { error: `Screenshot upload unlocks on ${getScreenshotUnlockLabel()}.` },
         { status: 403 }
       );
     }
