@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Stagger } from "@/components/ui/Animated";
 import { cn } from "@/lib/utils";
 import { isGameOpen, type GameId } from "@/lib/games/config";
+import { canPlayDubsmash, canPlayInstagramChallenge } from "@/lib/games/instagram-challenge";
 
 interface GameDefinition {
   id: string;
@@ -38,8 +39,21 @@ const GAMES: GameDefinition[] = [
   },
 ];
 
-export function GameGrid() {
-  const visibleGames = GAMES.filter((game) => isGameOpen(game.id as GameId));
+interface GameGridProps {
+  employeeId: string;
+}
+
+export function GameGrid({ employeeId }: GameGridProps) {
+  const visibleGames = GAMES.filter((game) => {
+    if (!isGameOpen(game.id as GameId)) return false;
+    if (game.id === "instagram-challenge" && !canPlayInstagramChallenge(employeeId)) {
+      return false;
+    }
+    if (game.id === "dubsmash" && !canPlayDubsmash(employeeId)) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <div

@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requirePlayableSession } from "@/lib/require-playable-session";
 import { createServiceClient } from "@/lib/supabase/server";
+import { canPlayDubsmash } from "@/lib/games/instagram-challenge";
 
 export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const { session, response } = await requirePlayableSession();
   if (response) return response;
+
+  if (!canPlayDubsmash(session.employeeId)) {
+    return NextResponse.json(
+      { error: "Dubsmash is not available for your employee ID." },
+      { status: 403 }
+    );
+  }
 
   try {
     const formData = await request.formData();

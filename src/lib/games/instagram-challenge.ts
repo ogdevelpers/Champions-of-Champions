@@ -1,6 +1,15 @@
 export const INSTAGRAM_HANDLE = "@tataaigofficial";
+export const INSTAGRAM_CHALLENGE_EMPLOYEE_PREFIX = "CMPRQ";
 export const SCREENSHOT_UNLOCK_SECONDS = 24 * 60 * 60;
 export const SCREENSHOT_UNLOCK_MS = SCREENSHOT_UNLOCK_SECONDS * 1000;
+
+export function canPlayInstagramChallenge(employeeId: string): boolean {
+  return employeeId.trim().toUpperCase().startsWith(INSTAGRAM_CHALLENGE_EMPLOYEE_PREFIX);
+}
+
+export function canPlayDubsmash(employeeId: string): boolean {
+  return !canPlayInstagramChallenge(employeeId);
+}
 
 export function getScreenshotUnlockLabel(): string {
   if (SCREENSHOT_UNLOCK_MS < 60 * 1000) {

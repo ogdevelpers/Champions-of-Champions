@@ -38,9 +38,12 @@ interface InstagramChallengeGameProps {
 
 export function InstagramChallengeGame({ initialSubmission }: InstagramChallengeGameProps) {
   const [submission, setSubmission] = useState(initialSubmission);
+  const [brandedPreview, setBrandedPreview] = useState<string | null>(null);
+  const [brandedBlob, setBrandedBlob] = useState<Blob | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
-  const [processing, setProcessing] = useState(false);
+  const [composing, setComposing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
   const [likesCount, setLikesCount] = useState("");
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
@@ -94,17 +97,19 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
     };
   }, []);
 
+  const showCamera = !submission && !brandedPreview;
+
   useEffect(() => {
-    if (!submission) {
+    if (showCamera) {
       void startCamera();
     }
     return () => stopCamera();
-  }, [submission, startCamera, stopCamera]);
+  }, [showCamera, startCamera, stopCamera]);
 
   useEffect(() => {
     const video = videoRef.current;
     const canvas = previewCanvasRef.current;
-    if (!video || !canvas || !frameOverlay || !ready || processing) return;
+    if (!video || !canvas || !frameOverlay || !ready || !showCamera || composing) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -119,7 +124,7 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
 
     frameId = requestAnimationFrame(render);
     return () => cancelAnimationFrame(frameId);
-  }, [ready, processing, frameOverlay]);
+  }, [ready, showCamera, composing, frameOverlay]);
 
   useEffect(() => {
     if (!submission || submission.instagram_screenshot_url) return;
@@ -163,18 +168,57 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
     return canvas.toDataURL("image/jpeg", 0.92);
   };
 
-  const saveBrandedPhoto = async (photoDataUrl: string) => {
-    setProcessing(true);
+  const buildBrandedPreview = async (photoDataUrl: string) => {
+    setComposing(true);
     setError(null);
     stopCamera();
-
     try {
       const blob = await composeBrandedPhoto(photoDataUrl);
-      const previewUrl = URL.createObjectURL(blob);
-      downloadBlob(blob, "champions-branded-photo.jpg");
+      setBrandedBlob(blob);
+      setBrandedPreview(URL.createObjectURL(blob));
+    } catch {
+      setError("Could not create your branded photo. Please try again.");
+      await startCamera();
+    } finally {
+      setComposing(false);
+    }
+  };
+
+  const takePhoto = () => {
+    const photoDataUrl = capturePhotoDataUrl();
+    if (!photoDataUrl) return;
+    void buildBrandedPreview(photoDataUrl);
+  };
+
+  const handleFileUpload = (file: File) => {
+    stopCamera();
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      if (dataUrl) void buildBrandedPreview(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const retake = async () => {
+    if (brandedPreview) URL.revokeObjectURL(brandedPreview);
+    setBrandedPreview(null);
+    setBrandedBlob(null);
+    setSavedBrandedPreview(null);
+    setSubmission(null);
+    setError(null);
+    await startCamera();
+  };
+
+  const handleSaveAndDownload = async () => {
+    if (!brandedBlob) return;
+    setSaving(true);
+    setError(null);
+    try {
+      downloadBlob(brandedBlob, "champions-branded-photo.jpg");
 
       const formData = new FormData();
-      formData.append("image", blob, "champions-branded-photo.jpg");
+      formData.append("image", brandedBlob, "champions-branded-photo.jpg");
 
       const res = await fetch("/api/games/instagram-challenge", {
         method: "POST",
@@ -184,11 +228,10 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
 
       if (!res.ok) {
         setError(data.error || "Failed to save your photo.");
-        await startCamera();
         return;
       }
 
-      setSavedBrandedPreview(previewUrl);
+      setSavedBrandedPreview(brandedPreview);
       setSubmission({
         branded_image_url: data.brandedImageUrl,
         photo_captured_at: data.photoCapturedAt,
@@ -196,28 +239,11 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
         likes_count: null,
         screenshot_uploaded_at: null,
       });
-    } catch {
-      setError("Could not create your branded photo. Please try again.");
-      await startCamera();
+      setBrandedPreview(null);
+      setBrandedBlob(null);
     } finally {
-      setProcessing(false);
+      setSaving(false);
     }
-  };
-
-  const takePhoto = () => {
-    const photoDataUrl = capturePhotoDataUrl();
-    if (!photoDataUrl) return;
-    void saveBrandedPhoto(photoDataUrl);
-  };
-
-  const handleFileUpload = (file: File) => {
-    stopCamera();
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target?.result as string;
-      if (dataUrl) void saveBrandedPhoto(dataUrl);
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleScreenshotSelect = (file: File) => {
@@ -271,6 +297,7 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
   };
 
   const brandedPhotoSrc = savedBrandedPreview || submission?.branded_image_url;
+  const canRetakeSaved = !!submission && !submission.instagram_screenshot_url;
 
   const screenshotUnlocked =
     submission && !submission.instagram_screenshot_url
@@ -302,13 +329,13 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
         </div>
       )}
 
-      {!submission && (
+      {showCamera && (
         <>
           <div className="relative mx-auto aspect-[3/4] w-full max-w-sm overflow-hidden bg-white shadow-2xl">
-            {(!ready || processing) && !cameraError && (
+            {(!ready || composing) && !cameraError && (
               <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/90">
                 <LoadingSpinner
-                  label={processing ? "Creating your branded photo..." : "Starting camera..."}
+                  label={composing ? "Applying frame..." : "Starting camera..."}
                 />
               </div>
             )}
@@ -324,7 +351,7 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
               ref={previewCanvasRef}
               width={FRAME_WIDTH}
               height={FRAME_HEIGHT}
-              className={`h-full w-full object-contain ${ready && !processing ? "" : "invisible"}`}
+              className={`h-full w-full object-contain ${ready && !composing ? "" : "invisible"}`}
             />
           </div>
           <canvas ref={captureCanvasRef} className="hidden" />
@@ -334,15 +361,15 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
           <GameActionBar className="max-w-md mx-auto">
             <Button
               onClick={takePhoto}
-              disabled={!ready || !!cameraError || processing}
+              disabled={!ready || !!cameraError || composing}
               className={gameActionButtonClass}
             >
-              📸 Capture & Save
+              📸 Capture Photo
             </Button>
             <Button
               variant="secondary"
               className={gameActionButtonClass}
-              disabled={processing}
+              disabled={composing}
               onClick={() => fileInputRef.current?.click()}
             >
               Upload Photo
@@ -357,6 +384,36 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
                 if (file) handleFileUpload(file);
               }}
             />
+          </GameActionBar>
+        </>
+      )}
+
+      {!submission && brandedPreview && (
+        <>
+          <div className="mx-auto max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={brandedPreview}
+              alt="Branded preview"
+              className="aspect-[3/4] w-full object-contain"
+            />
+          </div>
+          <GameActionBar className="max-w-md mx-auto">
+            <Button
+              onClick={handleSaveAndDownload}
+              disabled={!brandedBlob || saving}
+              className={gameActionButtonClass}
+            >
+              {saving ? "Saving..." : "Download & Save"}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={retake}
+              disabled={saving}
+              className={gameActionButtonClass}
+            >
+              Retake
+            </Button>
           </GameActionBar>
         </>
       )}
@@ -384,6 +441,11 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
             <Button variant="secondary" size="sm" onClick={handleDownloadAgain}>
               Download Again
             </Button>
+            {canRetakeSaved && (
+              <Button variant="secondary" size="sm" onClick={retake}>
+                Retake
+              </Button>
+            )}
           </div>
           <p className="text-center text-sm text-cream/75">
             Post this on Instagram and tag <strong className="text-gold-light">{INSTAGRAM_HANDLE}</strong>
