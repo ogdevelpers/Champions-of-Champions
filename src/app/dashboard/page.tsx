@@ -6,7 +6,6 @@ import { GameGrid } from "@/components/GameGrid";
 import { PageShell } from "@/components/PageShell";
 import { FadeIn } from "@/components/ui/Animated";
 import { hasOpenGames } from "@/lib/games/config";
-import { canPlayInstagramChallenge } from "@/lib/games/instagram-challenge";
 import { GamesClosedNotice } from "@/components/games/GamesClosedNotice";
 import { EventScheduleNotice } from "@/components/games/EventScheduleNotice";
 
@@ -15,10 +14,6 @@ export const runtime = "edge";
 export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect("/login");
-
-  const gamesDescription = canPlayInstagramChallenge(session.employeeId)
-    ? "Champion Click is live — snap a branded photo, post on Instagram, and compete for the highest likes!"
-    : "Dubsmash is live — pick a dialogue, record your performance, and save your blockbuster moment!";
 
   return (
     <PageShell overlay={false}>
@@ -46,10 +41,10 @@ export default async function DashboardPage() {
             <DashboardSection
               id="games"
               title="Play & Compete"
-              description={gamesDescription}
+              description="Dubsmash and Champion Click are live — pick a challenge and compete!"
               variant="elevated"
             >
-              <GameGrid employeeId={session.employeeId} />
+              <GameGrid />
             </DashboardSection>
           </FadeIn>
         )}

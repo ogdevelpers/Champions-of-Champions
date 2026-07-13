@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { DubsmashGame } from "@/components/games/DubsmashGame";
 import { GamePageLayout } from "@/components/GamePageLayout";
 import { isGameOpen } from "@/lib/games/config";
-import { canPlayDubsmash } from "@/lib/games/instagram-challenge";
 import { GamesClosedNotice } from "@/components/games/GamesClosedNotice";
 import { EventScheduleNotice } from "@/components/games/EventScheduleNotice";
 
@@ -12,10 +11,6 @@ export const runtime = "edge";
 export default async function DubsmashPage() {
   const session = await getSession();
   if (!session) redirect("/login");
-
-  if (!canPlayDubsmash(session.employeeId)) {
-    redirect("/dashboard");
-  }
 
   return (
     <GamePageLayout title="Dubsmash" subtitle="Enact your favourite Bollywood dialogues">

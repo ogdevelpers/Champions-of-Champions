@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { InstagramChallengeGame } from "@/components/games/InstagramChallengeGame";
 import { GamePageLayout } from "@/components/GamePageLayout";
 import { isGameOpen } from "@/lib/games/config";
-import { canPlayInstagramChallenge } from "@/lib/games/instagram-challenge";
 import { GamesClosedNotice } from "@/components/games/GamesClosedNotice";
 import { EventScheduleNotice } from "@/components/games/EventScheduleNotice";
 import { getInstagramChallengeSubmission } from "@/lib/games/instagram-challenge-status";
@@ -13,10 +12,6 @@ export const runtime = "edge";
 export default async function InstagramChallengePage() {
   const session = await getSession();
   if (!session) redirect("/login");
-
-  if (!canPlayInstagramChallenge(session.employeeId)) {
-    redirect("/dashboard");
-  }
 
   const submission = session.canPlayGames
     ? await getInstagramChallengeSubmission(session.employeeId)

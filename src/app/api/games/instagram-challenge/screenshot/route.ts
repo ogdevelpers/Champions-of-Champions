@@ -3,7 +3,6 @@ import { requirePlayableSession } from "@/lib/require-playable-session";
 import { createServiceClient } from "@/lib/supabase/server";
 import { isGameOpen } from "@/lib/games/config";
 import {
-  canPlayInstagramChallenge,
   canUploadScreenshot,
   getScreenshotUnlockLabel,
 } from "@/lib/games/instagram-challenge";
@@ -18,13 +17,6 @@ export const runtime = "edge";
 export async function POST(request: NextRequest) {
   const { session, response } = await requirePlayableSession();
   if (response) return response;
-
-  if (!canPlayInstagramChallenge(session.employeeId)) {
-    return NextResponse.json(
-      { error: "Champion Click is only available for eligible employee IDs." },
-      { status: 403 }
-    );
-  }
 
   if (!isGameOpen("instagram-challenge")) {
     return NextResponse.json({ error: "This challenge is currently closed." }, { status: 403 });

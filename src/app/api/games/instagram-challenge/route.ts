@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { requirePlayableSession } from "@/lib/require-playable-session";
 import { createServiceClient } from "@/lib/supabase/server";
 import { isGameOpen } from "@/lib/games/config";
-import { canPlayInstagramChallenge } from "@/lib/games/instagram-challenge";
 import { getInstagramChallengeSubmission } from "@/lib/games/instagram-challenge-status";
 import {
   INSTAGRAM_CHALLENGE_BUCKET,
@@ -15,13 +14,6 @@ export async function GET() {
   const { session, response } = await requirePlayableSession();
   if (response) return response;
 
-  if (!canPlayInstagramChallenge(session.employeeId)) {
-    return NextResponse.json(
-      { error: "Champion Click is only available for eligible employee IDs." },
-      { status: 403 }
-    );
-  }
-
   const submission = await getInstagramChallengeSubmission(session.employeeId);
   return NextResponse.json({ submission });
 }
@@ -29,13 +21,6 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const { session, response } = await requirePlayableSession();
   if (response) return response;
-
-  if (!canPlayInstagramChallenge(session.employeeId)) {
-    return NextResponse.json(
-      { error: "Champion Click is only available for eligible employee IDs." },
-      { status: 403 }
-    );
-  }
 
   if (!isGameOpen("instagram-challenge")) {
     return NextResponse.json({ error: "This challenge is currently closed." }, { status: 403 });
