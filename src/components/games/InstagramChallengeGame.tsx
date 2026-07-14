@@ -19,8 +19,10 @@ import {
   INSTAGRAM_HANDLE,
   canUploadScreenshot,
   formatCountdown,
+  getScreenshotDeadlineLabel,
   getScreenshotUnlockAt,
   getScreenshotUnlockLabel,
+  isScreenshotSubmissionClosed,
 } from "@/lib/games/instagram-challenge";
 import type { InstagramChallengeSubmission } from "@/lib/games/instagram-challenge-status";
 
@@ -28,7 +30,7 @@ const HOW_TO_PLAY = [
   "Click your photo using the event's digital frame.",
   "Download your branded picture.",
   `Post it on your Instagram and tag ${INSTAGRAM_HANDLE}.`,
-  `From ${getScreenshotUnlockLabel()}, return to the portal and upload a screenshot of your Instagram post showing the number of likes.`,
+  `From ${getScreenshotUnlockLabel()}, return to the portal and upload a screenshot of your Instagram post showing the number of likes (deadline ${getScreenshotDeadlineLabel()}).`,
   "The post with the highest likes wins an exciting hamper! 🏆",
 ];
 
@@ -49,6 +51,7 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [countdownLabel, setCountdownLabel] = useState("");
+  const [screenshotClosed, setScreenshotClosed] = useState(isScreenshotSubmissionClosed);
   const [savedBrandedPreview, setSavedBrandedPreview] = useState<string | null>(null);
   const [frameOverlay, setFrameOverlay] = useState<HTMLImageElement | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -127,7 +130,14 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
   }, [ready, showCamera, composing, frameOverlay]);
 
   useEffect(() => {
-    if (!submission || submission.instagram_screenshot_url) return;
+    const syncClosed = () => setScreenshotClosed(isScreenshotSubmissionClosed());
+    syncClosed();
+    const timer = setInterval(syncClosed, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!submission || submission.instagram_screenshot_url || screenshotClosed) return;
 
     const updateCountdown = () => {
       const unlockAt = getScreenshotUnlockAt(submission.photo_captured_at).getTime();
@@ -137,7 +147,7 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
     updateCountdown();
     const timer = setInterval(updateCountdown, 1000);
     return () => clearInterval(timer);
-  }, [submission]);
+  }, [submission, screenshotClosed]);
 
   const capturePhotoDataUrl = () => {
     const video = videoRef.current;
@@ -297,7 +307,7 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
   const brandedPhotoSrc = savedBrandedPreview || submission?.branded_image_url;
 
   const screenshotUnlocked =
-    submission && !submission.instagram_screenshot_url
+    submission && !submission.instagram_screenshot_url && !screenshotClosed
       ? canUploadScreenshot(submission.photo_captured_at)
       : false;
 
@@ -324,6 +334,21 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
         <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-300">
           {error}
         </div>
+      )}
+
+      {screenshotClosed && !submission?.instagram_screenshot_url && (
+        <Card glow className="text-center">
+          <Badge variant="muted">Upload Window Closed</Badge>
+          <h3 className="mt-3 font-display text-xl font-bold text-cream">
+            Screenshot Upload Window Is Closed
+          </h3>
+          <p className="mt-3 text-sm font-bold text-red-400 sm:text-base">
+            Submissions closed at {getScreenshotDeadlineLabel()}.
+          </p>
+          <p className="text-body mt-3 text-sm leading-relaxed text-cream/85">
+            You can still use this game to click branded pictures and download them.
+          </p>
+        </Card>
       )}
 
       {showCamera && (
@@ -445,7 +470,7 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
         </Card>
       )}
 
-      {submission && !submission.instagram_screenshot_url && !screenshotUnlocked && (
+      {submission && !submission.instagram_screenshot_url && !screenshotClosed && !screenshotUnlocked && (
         <Card glow className="text-center">
           <Badge variant="muted">Step 2 · Unlocks {getScreenshotUnlockLabel()}</Badge>
           <h3 className="mt-3 font-display text-xl font-bold text-cream">Screenshot Upload Locked</h3>
@@ -465,7 +490,7 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
               Upload a screenshot of your Instagram post showing the number of likes.
             </p>
             <p className="mt-3 text-sm font-bold text-red-400 sm:text-base">
-              Note:- Deadline to submit the photo is 5pm.
+              Note:- Deadline to submit the photo is {getScreenshotDeadlineLabel()}.
             </p>
           </div>
           {screenshotPreview && (
