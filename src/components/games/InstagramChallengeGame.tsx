@@ -464,6 +464,9 @@ export function InstagramChallengeGame({ initialSubmission }: InstagramChallenge
             <p className="text-body mt-2 text-sm">
               Upload a screenshot of your Instagram post showing the number of likes.
             </p>
+            <p className="mt-3 text-sm font-bold text-red-400 sm:text-base">
+              Note:- Deadline to submit the photo is 5pm.
+            </p>
           </div>
           {screenshotPreview && (
             <div className="mx-auto max-w-sm overflow-hidden rounded-2xl bg-white">
