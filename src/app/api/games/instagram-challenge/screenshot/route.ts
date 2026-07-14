@@ -4,9 +4,9 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { isGameOpen } from "@/lib/games/config";
 import {
   canUploadScreenshot,
-  getScreenshotDeadlineLabel,
+  // getScreenshotDeadlineLabel,
   getScreenshotUnlockLabel,
-  isScreenshotSubmissionClosed,
+  // isScreenshotSubmissionClosed,
 } from "@/lib/games/instagram-challenge";
 import { getInstagramChallengeSubmission } from "@/lib/games/instagram-challenge-status";
 import {
@@ -34,12 +34,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Screenshot already uploaded." }, { status: 409 });
     }
 
-    if (isScreenshotSubmissionClosed()) {
-      return NextResponse.json(
-        { error: `Screenshot upload closed at ${getScreenshotDeadlineLabel()}.` },
-        { status: 403 }
-      );
-    }
+    // Closing window check — re-enable later with SCREENSHOT_DEADLINE_AT
+    // if (isScreenshotSubmissionClosed()) {
+    //   return NextResponse.json(
+    //     { error: `Screenshot upload closed at ${getScreenshotDeadlineLabel()}.` },
+    //     { status: 403 }
+    //   );
+    // }
 
     if (!canUploadScreenshot(submission.photo_captured_at)) {
       return NextResponse.json(
