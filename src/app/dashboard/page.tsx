@@ -7,7 +7,6 @@ import { LiveStreamPlayer } from "@/components/LiveStreamPlayer";
 import { PageShell } from "@/components/PageShell";
 import { FadeIn } from "@/components/ui/Animated";
 import { hasOpenGames } from "@/lib/games/config";
-import { GamesClosedNotice } from "@/components/games/GamesClosedNotice";
 
 export const runtime = "edge";
 
@@ -44,13 +43,7 @@ export default async function DashboardPage() {
           </DashboardSection>
         </FadeIn>
 
-        {!hasOpenGames() ? (
-          <FadeIn delay={100}>
-            <div className="flex min-h-[24vh] items-center justify-center py-8">
-              <GamesClosedNotice />
-            </div>
-          </FadeIn>
-        ) : session.canPlayGames ? (
+        {hasOpenGames() && session.canPlayGames ? (
           <FadeIn delay={100}>
             <DashboardSection
               id="games"

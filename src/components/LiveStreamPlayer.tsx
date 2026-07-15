@@ -152,14 +152,7 @@ export function LiveStreamPlayer({ participant, className }: LiveStreamPlayerPro
         )}
       </div>
 
-      {/* Loads api_login in the browser so webcast captures employee/participant data */}
-      <iframe
-        src={authUrl}
-        title="Webcast attendance"
-        className="pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0"
-        tabIndex={-1}
-        aria-hidden
-      />
+      {/* Attendance is registered via fetch above — no second iframe (that page can show "event not started") */}
     </div>
   );
 }
