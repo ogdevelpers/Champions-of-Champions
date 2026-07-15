@@ -1,7 +1,7 @@
 -- Champions of Champions Microsite - Supabase Schema
 -- Run this in your Supabase SQL Editor
 
--- Employee IDs for login validation
+-- Employee IDs for login validation (whitelist — one row per allowed employee_id)
 CREATE TABLE IF NOT EXISTS employee_ids (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   employee_id TEXT UNIQUE NOT NULL,
@@ -17,6 +17,19 @@ CREATE TABLE IF NOT EXISTS employee_ids (
 -- ALTER TABLE employee_ids ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
 -- ALTER TABLE employee_ids ADD COLUMN IF NOT EXISTS can_play_games BOOLEAN DEFAULT false;
 
+-- Participants: each person who logs in (multiple per employee_id allowed)
+CREATE TABLE IF NOT EXISTS participants (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  employee_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  last_login_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE (employee_id, email)
+);
+
+CREATE INDEX IF NOT EXISTS idx_participants_employee_id ON participants (employee_id);
+
 -- Dubsmash submissions
 CREATE TABLE IF NOT EXISTS dubsmash_submissions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -26,7 +39,7 @@ CREATE TABLE IF NOT EXISTS dubsmash_submissions (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Instagram photo challenge submissions
+-- Instagram photo challenge submissions (one per employee_id)
 CREATE TABLE IF NOT EXISTS instagram_challenge_submissions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   employee_id TEXT NOT NULL UNIQUE,

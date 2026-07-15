@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { AppHeader } from "@/components/AppHeader";
 import { GameGrid } from "@/components/GameGrid";
+import { LiveStreamPlayer } from "@/components/LiveStreamPlayer";
 import { PageShell } from "@/components/PageShell";
 import { FadeIn } from "@/components/ui/Animated";
 import { hasOpenGames } from "@/lib/games/config";
@@ -24,15 +25,35 @@ export default async function DashboardPage() {
       />
 
       <main className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-6 pb-14 sm:space-y-10 sm:py-8 sm:pb-16 md:space-y-12 md:py-10">
+        <FadeIn>
+          <DashboardSection
+            id="live-stream"
+            title="Live Event Stream"
+            description="Watch the Champions of Champions event live. Fullscreen is available for a better viewing experience."
+            variant="stream"
+            contentClassName="flex justify-center"
+          >
+            <LiveStreamPlayer
+              participant={{
+                employeeId: session.employeeId,
+                participantId: session.participantId,
+                name: session.name ?? session.employeeId,
+                email: session.email ?? "",
+              }}
+              className="w-full"
+            />
+          </DashboardSection>
+        </FadeIn>
+
         {!hasOpenGames() ? (
           <FadeIn delay={100}>
-            <div className="flex min-h-[40vh] items-center justify-center py-8">
+            <div className="flex min-h-[24vh] items-center justify-center py-8">
               <GamesClosedNotice />
             </div>
           </FadeIn>
         ) : !session.canPlayGames ? (
           <FadeIn delay={100}>
-            <div className="flex min-h-[40vh] items-center justify-center py-8">
+            <div className="flex min-h-[24vh] items-center justify-center py-8">
               <EventScheduleNotice />
             </div>
           </FadeIn>

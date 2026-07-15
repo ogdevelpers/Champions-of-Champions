@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 export const SESSION_COOKIE = "champions_employee_session";
 
 export interface EmployeeSession {
+  participantId: string;
   employeeId: string;
   name: string | null;
   email: string | null;
@@ -13,8 +14,10 @@ export function parseSessionValue(value: string): EmployeeSession | null {
   try {
     const parsed = JSON.parse(value) as Partial<EmployeeSession>;
     if (!parsed.employeeId || typeof parsed.employeeId !== "string") return null;
+    if (!parsed.participantId || typeof parsed.participantId !== "string") return null;
 
     return {
+      participantId: parsed.participantId,
       employeeId: parsed.employeeId,
       name: parsed.name ?? null,
       email: parsed.email ?? null,
@@ -43,7 +46,7 @@ export function sessionCookieOptions(maxAge = 60 * 60 * 24 * 7) {
   };
 }
 
-export { isValidEmail, isTataAigEmail } from "@/lib/email";
+export { isValidEmail } from "@/lib/email";
 
 export function normalizeEmployeeId(employeeId: string): string {
   return employeeId.trim().toUpperCase();

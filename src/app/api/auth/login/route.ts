@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServiceClient } from "@/lib/supabase/server";
-import { isTataAigEmail } from "@/lib/email";
+import { isValidEmail } from "@/lib/email";
 import {
   SESSION_COOKIE,
   normalizeEmployeeId,
   sessionCookieOptions,
 } from "@/lib/auth";
+import { registerLiveStreamAttendance } from "@/lib/live-stream";
 
 export const runtime = "edge";
 
@@ -35,9 +36,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
-    if (!email || typeof email !== "string" || !isTataAigEmail(email)) {
+    if (!email || typeof email !== "string" || !isValidEmail(email)) {
       return NextResponse.json(
-        { error: "Please use your official @tataaig.com email address" },
+        { error: "Please enter a valid email address" },
         { status: 400 }
       );
     }
@@ -68,16 +69,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { error: updateError } = await supabase
-      .from("employee_ids")
-      .update({
-        name: trimmedName,
-        email: normalizedEmail,
-      })
-      .eq("employee_id", normalizedId);
+    const now = new Date().toISOString();
+    const { data: participant, error: participantError } = await supabase
+      .from("participants")
+      .upsert(
+        {
+          employee_id: normalizedId,
+          name: trimmedName,
+          email: normalizedEmail,
+          last_login_at: now,
+        },
+        { onConflict: "employee_id,email" }
+      )
+      .select("id, name, email")
+      .single();
 
-    if (updateError) {
-      console.error("Login profile update failed:", updateError.message);
+    if (participantError || !participant) {
+      console.error("Participant save failed:", participantError?.message);
       return NextResponse.json(
         { error: "Could not save your details. Please try again." },
         { status: 500 }
@@ -85,21 +93,31 @@ export async function POST(request: NextRequest) {
     }
 
     const session = JSON.stringify({
+      participantId: participant.id,
       employeeId: employee.employee_id,
-      name: trimmedName,
-      email: normalizedEmail,
+      name: participant.name,
+      email: participant.email,
       canPlayGames: employee.can_play_games,
     });
 
     const cookieStore = await cookies();
     cookieStore.set(SESSION_COOKIE, session, sessionCookieOptions());
 
+    // Once per login — do not await so login stays fast under load
+    void registerLiveStreamAttendance({
+      employeeId: employee.employee_id,
+      participantId: participant.id,
+      name: participant.name,
+      email: participant.email,
+    });
+
     return NextResponse.json({
       success: true,
       employee: {
         id: employee.employee_id,
-        name: trimmedName,
-        email: normalizedEmail,
+        participantId: participant.id,
+        name: participant.name,
+        email: participant.email,
         canPlayGames: employee.can_play_games,
       },
     });
