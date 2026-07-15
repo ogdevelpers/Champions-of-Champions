@@ -24,6 +24,12 @@ export function LiveStreamPlayer({ participant, className }: LiveStreamPlayerPro
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [playbackBlocked, setPlaybackBlocked] = useState(false);
 
+  // Register viewer with webcast (same URL as "Open Full Webcast") in the browser.
+  // Cloud player iframe alone does not send employee/participant data.
+  useEffect(() => {
+    void fetch(authUrl, { mode: "no-cors", credentials: "omit", redirect: "follow" });
+  }, [authUrl]);
+
   useEffect(() => {
     const player = playerRef.current;
     if (!player) return;
@@ -145,6 +151,15 @@ export function LiveStreamPlayer({ participant, className }: LiveStreamPlayerPro
           />
         )}
       </div>
+
+      {/* Loads api_login in the browser so webcast captures employee/participant data */}
+      <iframe
+        src={authUrl}
+        title="Webcast attendance"
+        className="pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0"
+        tabIndex={-1}
+        aria-hidden
+      />
     </div>
   );
 }

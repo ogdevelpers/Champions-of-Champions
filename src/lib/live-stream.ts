@@ -8,15 +8,15 @@ export interface LiveStreamParticipant {
   email: string;
 }
 
-/** Iframe player URL — cloud player only (do not use api_login here). */
+/** Visible iframe — cloud player (no viewer identity in this URL). */
 export function getLiveStreamPlayerUrl(): string {
   return process.env.NEXT_PUBLIC_LIVE_STREAM_URL ?? CLOUD_PLAYER_URL;
 }
 
 /**
- * Webcast SSO URL — registers the viewer with participant details.
+ * Webcast SSO URL — this is what captures viewer data at their end.
  * Format: api_login.php?data=employee_id=…&participant_id=…&name=…&email=…
- * Open in a top-level window or call server-side; not for iframe embed.
+ * Must be loaded in the user's browser (not via server fetch).
  */
 export function getLiveStreamAuthUrl(participant: LiveStreamParticipant): string {
   const data = [
@@ -31,19 +31,4 @@ export function getLiveStreamAuthUrl(participant: LiveStreamParticipant): string
 
 export function isDirectVideoStream(streamUrl: string): boolean {
   return /\.(mp4|webm|ogg)(\?.*)?$/i.test(streamUrl);
-}
-
-/** Register participant with the webcast provider (server-side only). */
-export async function registerLiveStreamAttendance(
-  participant: LiveStreamParticipant
-): Promise<void> {
-  try {
-    // Abort if provider is slow — do not block dashboard render for long
-    await fetch(getLiveStreamAuthUrl(participant), {
-      redirect: "follow",
-      signal: AbortSignal.timeout(3000),
-    });
-  } catch {
-    // Non-blocking — stream still plays via cloud player
-  }
 }

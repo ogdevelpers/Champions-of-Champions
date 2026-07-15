@@ -7,7 +7,6 @@ import {
   normalizeEmployeeId,
   sessionCookieOptions,
 } from "@/lib/auth";
-import { registerLiveStreamAttendance } from "@/lib/live-stream";
 
 export const runtime = "edge";
 
@@ -102,14 +101,6 @@ export async function POST(request: NextRequest) {
 
     const cookieStore = await cookies();
     cookieStore.set(SESSION_COOKIE, session, sessionCookieOptions());
-
-    // Once per login — do not await so login stays fast under load
-    void registerLiveStreamAttendance({
-      employeeId: employee.employee_id,
-      participantId: participant.id,
-      name: participant.name,
-      email: participant.email,
-    });
 
     return NextResponse.json({
       success: true,

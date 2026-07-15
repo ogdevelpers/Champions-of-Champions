@@ -8,7 +8,6 @@ import { PageShell } from "@/components/PageShell";
 import { FadeIn } from "@/components/ui/Animated";
 import { hasOpenGames } from "@/lib/games/config";
 import { GamesClosedNotice } from "@/components/games/GamesClosedNotice";
-import { EventScheduleNotice } from "@/components/games/EventScheduleNotice";
 
 export const runtime = "edge";
 
@@ -51,13 +50,7 @@ export default async function DashboardPage() {
               <GamesClosedNotice />
             </div>
           </FadeIn>
-        ) : !session.canPlayGames ? (
-          <FadeIn delay={100}>
-            <div className="flex min-h-[24vh] items-center justify-center py-8">
-              <EventScheduleNotice />
-            </div>
-          </FadeIn>
-        ) : (
+        ) : session.canPlayGames ? (
           <FadeIn delay={100}>
             <DashboardSection
               id="games"
@@ -68,7 +61,7 @@ export default async function DashboardPage() {
               <GameGrid />
             </DashboardSection>
           </FadeIn>
-        )}
+        ) : null}
 
         <div className="relative z-20 rounded-2xl border-2 border-gold bg-brand-header/90 px-4 py-4 text-center shadow-[0_8px_32px_rgba(0,0,0,0.5)] sm:px-6 sm:py-5">
           <p className="font-display text-sm font-bold uppercase leading-relaxed tracking-[0.18em] text-cream sm:text-base">
